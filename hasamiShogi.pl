@@ -1,8 +1,8 @@
 %tabuleiro
 
 
-linhaLimite([*,*,*,*,*,*,*,*,*,*,*]).
-linhaDivH([*,-,-,-,-,-,-,-,-,-,*]).
+linhaLimite([*,*,*,*,*,*,*,*,*,*,*,*,*,*,*,*,*,*,*,*,*,*,*,*,*,*,*,*,*,*,*,*,*,*,*,*,*,*]).
+linhaDivH([*,-,-,-,-,-,-,-,-,-,-,-,-,-,-,-,-,-,-,-,-,-,-,-,-,-,-,-,-,-,-,-,-,-,-,-,-,*]).
 
 tabuleiro(
 	 [[1,1,1,1,1,1,1,1,1],
@@ -15,48 +15,88 @@ tabuleiro(
 	  [0,0,0,0,0,0,0,0,0],
 	  [2,2,2,2,2,2,2,2,2]]).
 
-piece(1, a).
-piece(2, b).
-piece(0, ' ').
-piece(*, *).
-piece(-,-).
+piece1(1, ' ----- ').
+piece1(2, ' ----- ').
+piece1(0, '       ').
 
-printl([]).
-printl([A|R]):-
 
-	piece(A, X),
+piece2(1, '|  a  |').
+piece2(2, '|  b  |').
+piece2(0, '       ').
+
+
+piece3(1, ' ----- ').
+piece3(2, ' ----- ').
+piece3(0, '       ').
+
+
+
+printLinhaPeca([]).
+printLinhaPeca([A|R]):-
+	piece1(A, X),
 	write(X),
 	write('|'),
-	printl(R).
+	printLinhaPeca(R).
 
-printl3([]).
-printl3([A|R]):-
-	piece(A, X),
+printLinhaPeca3([]).
+printLinhaPeca3([A|R]):-
+	piece3(A, X),
 	write(X),
+	write('|'),
+	printLinhaPeca3(R).
+
+printLinhaPeca2([]).
+printLinhaPeca2([A|R]):-
+	piece2(A, X),
+	write(X),
+	write('|'),
+	printLinhaPeca2(R).
+
+
+printLinha([]).
+printLinha([A|R]):-
+	write(A),
 	write(' '),
-	printl3(R).
+	printLinha(R).
 
 
-printl2([]).
-printl2([A|R]):-
+printPecas([]).
+printPecas([A|R]):-
 	linhaDivH(X),
 	write('*|'),
-	printl(A),
+	printLinhaPeca(A),
 	write('*'),
 	nl,
-	printl3(X),
+	write('*|'),
+	printLinhaPeca2(A),
+	write('*'),
 	nl,
-	printl2(R).
+	write('*|'),
+	printLinhaPeca3(A),
+	write('*'),
+	nl,
+	printLinha(X),
+	nl,
+	printPecas(R).
 
 desenha:-
 	tabuleiro(T),
 	linhaLimite(L),
 	linhaDivH(X),
-	printl3(L),
+	printLinha(L),
 	nl,
-	printl3(X),
+	printLinha(X),
 	nl,
-	printl2(T),
-	printl3(L).
+	printPecas(T),
+	printLinha(L).
+
+
+
+
+
+
+
+
+
 
 
