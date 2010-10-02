@@ -68,18 +68,25 @@ printPecas([A|R],[X|Y]):-
 	linhaDivH, nl,
 	printPecas(R, Y).
 
-desenha:-
-	tabuleiro(T),
+desenha(Tabuleiro):-
 	linhaNumerosV(X),
 	linhaLetras, nl,
 	linhaLimite, nl,
 	linhaDivH, nl,
-	printPecas(T,X),
+	printPecas(Tabuleiro,X),
 	linhaLimite.
 
 %FIM DO DESENHO DO TABULEIRO
 
 
+%AVALIACAO DA JOGADA%
+
+%valida_jogada(X,Y,Tabuleiro,A,B):-.
+%posicao_ocupada(X,Y,Tabuleiro,Resposta):-.
+%verifica_caminho(X,Y,Tabuleiro,A,B, Resposta):-.
+%verifica_conquistas(Tabuleiro):-.
+
+%FIM DA AVALIACAO DA JOGADA%
 
 
 
