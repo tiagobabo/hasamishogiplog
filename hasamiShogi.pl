@@ -78,6 +78,25 @@ desenha(Tabuleiro):-
 
 %FIM DO DESENHO DO TABULEIRO
 
+%MENU DO JOGO
+
+menu:-
+    write('1 - Jogador vs CPU'),nl,
+    write('2 - Jogador vs Jogador'),nl,
+    write('3 - CPU vs CPU'),nl,
+    write('stop - para sair'),nl,
+    write('Escolha uma opcao'),nl,
+    read(X),
+    write(X),
+    verifica(X).
+
+verifica(1):-tabuleiro(T), desenha(T), !.
+verifica(2):-tabuleiro(T), desenha(T), !.
+verifica(3):-tabuleiro(T), desenha(T), !.
+verifica(stop):-!.
+verifica(_):-!, menu.
+
+%FIM DO DESENHO DO JOGO
 
 %AVALIACAO DA JOGADA%
 
