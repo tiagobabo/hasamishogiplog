@@ -90,7 +90,7 @@ menu:-
     write(X),
     verifica(X).
 
-verifica(1):-tabuleiro(T), desenha(T), !.
+verifica(1):-tabuleiro(T), desenha(T), cicloJogo(T, 1), !.
 verifica(2):-tabuleiro(T), desenha(T), !.
 verifica(3):-tabuleiro(T), desenha(T), !.
 verifica(stop):-!.
@@ -99,6 +99,42 @@ verifica(_):-!, menu.
 %FIM DO DESENHO DO JOGO
 
 %AVALIACAO DA JOGADA%
+
+
+cicloJogo(T, Jogador):- nl,
+		write('Peca a mover:')
+                ,nl,
+		write('Linha (Ex: 1) : '),
+		read(Y),
+		nl,
+		write('Coluna (Ex: A) : '),
+		read(X),
+		verificaPeca(T,X,Y,Jogador),
+		write('Posicao desejada:'),
+		nl,
+		write('Linha (Ex: 1) : '),
+		read(Yf),
+		nl,
+		write('Coluna (Ex: A) : '),
+		read(Xf),
+		verificaPeca(T, Xf,Yf,0),
+		movePeca(X,Y,Xf,Yf,Jogador,T,TNovo),
+		cicloJogo(TNovo, Jogador).
+
+verificaPeca(T,X,Y,Jogador) :- verificaPecaAux(T,X,Y,Jogador,1).
+verificaPecaAux([],_,_,_,_):- fail.
+verificaPecaAux([T|_],X,Y,Jogador,Y) :- verificaPecaLinha(T,X,Jogador, 1).
+verificaPecaAux([_|R],X,Y,Jogador,Linha) :-
+	                                Linha \== Y,
+	                                Linha2 is Linha+1,
+					verificaPecaAux(R,X,Y,Jogador,Linha2).
+
+verificaPecaLinha([Jogador|_], X, Jogador,  X).
+verificaPecaLinha([], _, _, _) :- fail.
+verificaPecaLinha([_|R], X, Jogador, Coluna) :- Coluna\==X,
+			          N1 is Coluna+1,
+				  verificaPecaLinha(R, X, Jogador, N1).
+
 
 %valida_jogada(X,Y,Tabuleiro,A,B):-.
 %posicao_ocupada(X,Y,Tabuleiro,Resposta):-.
