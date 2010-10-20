@@ -11,11 +11,11 @@ tabuleiro(
 	  [0,0,0,0,0,0,0,0,0],
 	  [0,0,0,0,0,0,0,0,0],
 	  [0,0,0,0,0,0,0,0,0],
+	  [2,0,0,0,0,0,0,0,0],
 	  [0,0,0,0,0,0,0,0,0],
 	  [0,0,0,0,0,0,0,0,0],
 	  [0,0,0,0,0,0,0,0,0],
-	  [0,0,0,0,0,0,0,0,0],
-	  [2,2,2,2,2,2,2,2,2]]).
+	  [0,2,2,2,2,2,2,2,2]]).
 
 piece1(1):- write(' ----- |').
 piece1(2):- write(' ----- |').
@@ -118,6 +118,7 @@ cicloJogo(T, Jogador):- nl,
 		write('Coluna (Ex: A) : '),
 		read(Xf),
 		verificaPeca(T, Xf,Yf,0),
+		validaCaminho(T,Xf,Yf,X,Y,Jogador),
 		movePeca(X,Y,Xf,Yf,Jogador,T,TNovo),
 		cicloJogo(TNovo, Jogador).
 
@@ -134,6 +135,15 @@ verificaPecaLinha([], _, _, _) :- fail.
 verificaPecaLinha([_|R], X, Jogador, Coluna) :- Coluna\==X,
 			          N1 is Coluna+1,
 				  verificaPecaLinha(R, X, Jogador, N1).
+
+
+validaCaminho(T,Xf,Yf,Xf,Yf,Jogador) :- verificaPeca(T,Xf,Yf,Jogador), !.
+% Caso o Xf seja igual ao Xi
+validaCaminho(T,Xf,Y,Xf,Yf,Jogador) :- Y2 is Y+1,
+	                               verificaPeca(T,Xf,Y2, Jogador),
+				       validaCaminho(T,Xf,Y2,Xf,Yf,Jogador), !.
+
+
 
 
 %valida_jogada(X,Y,Tabuleiro,A,B):-.
