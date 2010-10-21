@@ -141,7 +141,12 @@ validaCaminho(T,Xf,Yf,Xf,Yf,Jogador) :- verificaPeca(T,Xf,Yf,Jogador), !.
 % Caso o Xf seja igual ao Xi
 validaCaminho(T,Xf,Y,Xf,Yf,Jogador) :- Y2 is Y+1,
 	                               verificaPeca(T,Xf,Y2, Jogador),
+				       %verificaVertical(T,[Xf,Yf]),
 				       validaCaminho(T,Xf,Y2,Xf,Yf,Jogador), !.
+
+
+verificaVertical([T|_],[T|_]) :- write('VERTICAL').
+verificaHorizontal([_|R],[_|R]) :- write('HORIZONTAL').
 
 
 
