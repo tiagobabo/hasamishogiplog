@@ -100,7 +100,8 @@ verifica(_):-!, menu.
 
 %AVALIACAO DA JOGADA%
 
-
+troca(1,2).
+troca(2,1).
 cicloJogo(T, Jogador):- nl,
 		write('Peca a mover:')
                 ,nl,
@@ -118,9 +119,10 @@ cicloJogo(T, Jogador):- nl,
 		write('Coluna (Ex: A) : '),
 		read(Xf),
 		verificaPeca(T, Xf,Yf,0),
-		validaCaminho(T,Xf,Yf,X,Y,Jogador),
+		%validaCaminho(T,Xf,Yf,X,Y,Jogador),
 		movePeca(X,Y,Xf,Yf,Jogador,T,TNovo),
-		cicloJogo(TNovo, Jogador).
+		troca(Jogador, Jogador2),
+		cicloJogo(TNovo, Jogador2).
 
 verificaPeca(T,X,Y,Jogador) :- verificaPecaAux(T,X,Y,Jogador,1).
 verificaPecaAux([],_,_,_,_):- fail.
@@ -141,14 +143,24 @@ validaCaminho(T,Xf,Yf,Xf,Yf,Jogador) :- verificaPeca(T,Xf,Yf,Jogador), !.
 % Caso o Xf seja igual ao Xi
 validaCaminho(T,Xf,Y,Xf,Yf,Jogador) :- Y2 is Y+1,
 	                               verificaPeca(T,Xf,Y2, Jogador),
-				       %verificaVertical(T,[Xf,Yf]),
 				       validaCaminho(T,Xf,Y2,Xf,Yf,Jogador), !.
 
 
-verificaVertical([T|_],[T|_]) :- write('VERTICAL').
-verificaHorizontal([_|R],[_|R]) :- write('HORIZONTAL').
+% MOVE PECA
+movePeca(X, Y, Xf, Yf, Jogador, T, TNovo):- movePecaAux(X,Y,Xf,Yf,Jogador, T, TNovo, 1).
+movePecaAux(_,_,_,_,_,[],_,_):-write('Falhou'), nl, !.
+movePecaAux(_,_,Xf,Yf,Jogador, [T|_], [F|_], Yf):- trocaPeca(Xf, T, F, Jogador, 1), !.
+movePecaAux(X,Y,_,_,_, [T|_], [_|F], Y):- trocaPeca(X,T, F,0,1), !.
+movePecaAux(X,Y,Xf,Yf,Jogador,[A|R], [H|T], Linha):-
+	Linha2 is Linha+1,
+	movePecaAux(X,Y,Xf,Yf,Jogador, R, [A,H|T], Linha2).
 
-
+trocaPeca(X, [_], [_], _, X).
+trocaPeca(_,[],_,_,_):-fail.
+trocaPeca(X, [H1|T1], [H2|_], NovaPeca, Coluna):-
+	Coluna \== X,
+	N1 is Coluna+1,
+	trocaPeca(X, T1, [H2,H1|_], NovaPeca, N1).
 
 
 %valida_jogada(X,Y,Tabuleiro,A,B):-.
@@ -157,6 +169,10 @@ verificaHorizontal([_|R],[_|R]) :- write('HORIZONTAL').
 %verifica_conquistas(Tabuleiro):-.
 
 %FIM DA AVALIACAO DA JOGADA%
+
+
+
+
 
 
 
