@@ -12,7 +12,7 @@ tabuleiro(
 	  [0,0,0,0,0,0,0,0,0],
 	  [0,0,0,0,0,0,0,0,0],
 	  [0,0,0,0,0,0,0,0,0],
-	  [2,0,0,0,0,0,0,0,0],
+	  [0,2,2,1,2,2,2,1,0],
 	  [0,0,0,0,0,0,0,0,0],
 	  [0,0,0,0,0,0,0,0,0],
 	  [0,0,0,0,0,0,0,0,0],
@@ -131,7 +131,8 @@ cicloJogo(T, Jogador):-
 	(muda_tab(0,Jogador,Xf,Yf,T,TNovo),
 	muda_tab(Jogador,0,X,Y,TNovo,TNovo2),
 	troca(Jogador, Jogador2),
-	cicloJogo(TNovo2, Jogador2)),cicloJogo(T, Jogador)).
+	conqHor(TNovo2, Jogador, TNovo3, TNovo2),
+	if(terminouJogo(TNovo3,Jogador2),menu,cicloJogo(TNovo3, Jogador2))), cicloJogo(T, Jogador)).
 
 % VERIFICA SE A PECA E' DO UTLIZADOR
 
@@ -165,6 +166,55 @@ validaCaminho(T,X,Yf,Xf,Yf,Jogador) :-
 	verificaPeca(T,X2,Yf,0),
 	validaCaminho(T,X2,Yf,Xf,Yf,Jogador).
 
+%VERIFICA SE HA PECAS CONQUISTADAS NA HORIZONTAL
+
+conqHor(Tabuleiro, Jogador, TNovo, TabuleiroCop):-conqHorAux(Tabuleiro, Jogador, 1, TNovo, TabuleiroCop).
+
+conqHorAux([],_,_, TNovo, TNovo).
+conqHorAux([Linha|R], Jogador,Y, TNovo, TabuleiroCop):-
+	Y \== 10,
+	conqHorLinha(Linha, Jogador, 1, TNovo, TabuleiroCop, Y),
+	Y2 is Y+1,
+	conqHorAux(R,Jogador, Y2, TNovo, TabuleiroCop).
+
+conqHorLinha([],_,_,TNovo,TNovo,_).
+conqHorLinha([Elem|R], Jogador, X, TNovo, TabuleiroCop, Y):-
+	X \== 10,
+	if(Elem = Jogador, (conqHorLinhaAux(R,Jogador, X, TNovo2, TabuleiroCop, 0, Y), X1 is X+1,
+	conqHorLinha(R, Jogador, X1, TNovo2, TabuleiroCop, Y)),(X1 is X+1,
+	conqHorLinha(R, Jogador, X1, TNovo, TabuleiroCop, Y))).
+
+conqHorLinhaAux2(_,X,TNovo,TNovo,X2,_):- X > X2, desenha(TNovo),nl.
+conqHorLinhaAux2(Elem, X, TNovo, TabuleiroCop, Xaux, Y):-
+	X =< Xaux,
+	troca(Elem, Jog2),
+	muda_tab(Jog2,0,X,Y,TabuleiroCop,TNovo),
+      	X2 is X+1,
+	conqHorLinhaAux2(Elem, X2, _, TNovo, Xaux, Y).
+
+conqHorLinhaAux([Jogador|_], Jogador, _, TNovo,TNovo,0,_).
+conqHorLinhaAux([0|_], _, _, TNovo,TNovo,0,_).
+conqHorLinhaAux([Jogador|_], Jogador, X, TNovo,TabuleiroCop,Xaux,Y):-
+	Xaux \== 0,
+	Xaux3 is Xaux+X,
+	X1 is X+1,
+	conqHorLinhaAux2(Jogador, X1, TNovo, TabuleiroCop, Xaux3, Y).
+       % conqHorLinhaAux(Tail, Jogador, X1, _, TNovo2, Xaux3, Y)
+
+conqHorLinhaAux([0|_], Jogador, X, TNovo,TabuleiroCop,Xaux,Y):-
+	Xaux \== 0,
+	Xaux3 is Xaux+X,
+	X1 is X+1,
+	conqHorLinhaAux2(Jogador, X1, TNovo, TabuleiroCop, Xaux3, Y).
+%	conqHorLinhaAux(Tail, Jogador,X, _, TNovo, Xaux3, Y).
+
+conqHorLinhaAux([],_,_,TNovo, TNovo,_,_).
+conqHorLinhaAux([Elem|R], Jogador, X, TNovo, TabuleiroCop, Xaux, Y):-
+	troca(Jogador, Jogador2),
+      	Elem == Jogador2,
+	Xaux2 is Xaux+1,!,
+	conqHorLinhaAux(R, Jogador, X, TNovo, TabuleiroCop, Xaux2, Y).
+
 % ALTERA A POSICAO DA PECA DO JOGADOR
 
 muda_tab(Peca,Pnov,X,Y,Tab,NovoTab):-
@@ -189,6 +239,14 @@ muda_linha(N,Peca,Pnov,X,[El|Resto],[El|Resto2]):-
 	muda_linha(N2,Peca,Pnov,X,Resto,Resto2).
 
 
+%VERIFICA SE O JOGO TERMINOU
+
+terminouJogo(T,Jogador) :- terminouJogoaux(T,1,1,0,Jogador).
+terminouJogoaux(_,9,9,NPecas,_):-!, NPecas < 3.
+terminouJogoaux(T,X,Y,NPecas,Jogador) :-
+       	if(verificaPeca(T, X, Y, Jogador), NPecasNovo is NPecas+1, NPecasNovo is NPecas),
+	if(X == 9, (X1 is 1, Y1 is Y+1), (X1 is X+1, Y1 is Y)),
+	terminouJogoaux(T,X1,Y1,NPecasNovo, Jogador).
 
 %valida_jogada(X,Y,Tabuleiro,A,B):-.
 %posicao_ocupada(X,Y,Tabuleiro,Resposta):-.
@@ -196,6 +254,7 @@ muda_linha(N,Peca,Pnov,X,[El|Resto],[El|Resto2]):-
 %verifica_conquistas(Tabuleiro):-.
 
 %FIM DA AVALIACAO DA JOGADA%
+
 
 
 
