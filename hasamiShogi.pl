@@ -212,7 +212,7 @@ conqHorLinhaAux([],_,_,TNovo, TNovo,_,_).
 conqHorLinhaAux([Elem|R], Jogador, X, TNovo, TabuleiroCop, Xaux, Y):-
 	troca(Jogador, Jogador2),
       	Elem == Jogador2,
-	Xaux2 is Xaux+1,!,
+	Xaux2 is Xaux+1,
 	conqHorLinhaAux(R, Jogador, X, TNovo, TabuleiroCop, Xaux2, Y).
 
 % ALTERA A POSICAO DA PECA DO JOGADOR
