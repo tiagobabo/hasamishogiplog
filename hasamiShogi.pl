@@ -12,11 +12,11 @@ tabuleiro(
 	  [0,0,0,0,0,0,0,0,0],
 	  [0,0,0,0,0,0,0,0,0],
 	  [0,0,0,0,0,0,0,0,0],
-	  [0,2,2,1,2,2,2,1,0],
+	  [0,0,2,0,2,0,2,1,0],
 	  [0,0,0,0,0,0,0,0,0],
 	  [0,0,0,0,0,0,0,0,0],
 	  [0,0,0,0,0,0,0,0,0],
-	  [0,2,2,2,2,2,2,2,2]]).
+	  [0,0,2,2,0,0,0,0,0]]).
 
 piece1(1):- write(' ----- |').
 piece1(2):- write(' ----- |').
@@ -132,7 +132,9 @@ cicloJogo(T, Jogador):-
 	muda_tab(Jogador,0,X,Y,TNovo,TNovo2),
 	troca(Jogador, Jogador2),
 	conqHor(TNovo2, Jogador, TNovo3, TNovo2),
-	if(terminouJogo(TNovo3,Jogador2),menu,cicloJogo(TNovo3, Jogador2))), cicloJogo(T, Jogador)).
+	write('a'), nl,
+	conqHor(TNovo3, Jogador2, TNovo4, TNovo3),
+	if(terminouJogo(TNovo4,Jogador2),menu,cicloJogo(TNovo4, Jogador2))), cicloJogo(T, Jogador)).
 
 % VERIFICA SE A PECA E' DO UTLIZADOR
 
@@ -149,6 +151,7 @@ verificaPecaLinha([], _, _, _).
 verificaPecaLinha([_|R], X, Jogador, Coluna) :- Coluna\==X,
 			          N1 is Coluna+1,
 				  verificaPecaLinha(R, X, Jogador, N1).
+
 % VERIFICA SE A JOGADA E' VALIDA
 
 validaCaminho(_,Xf,Yf,X,Y,_):-Xf \== X, Yf \== Y, fail.
@@ -173,40 +176,33 @@ conqHor(Tabuleiro, Jogador, TNovo, TabuleiroCop):-conqHorAux(Tabuleiro, Jogador,
 conqHorAux([],_,_, TNovo, TNovo).
 conqHorAux([Linha|R], Jogador,Y, TNovo, TabuleiroCop):-
 	Y \== 10,
-	conqHorLinha(Linha, Jogador, 1, TNovo, TabuleiroCop, Y),
+	conqHorLinha(Linha, Jogador, 1, TNovo2, TabuleiroCop, Y),
 	Y2 is Y+1,
-	conqHorAux(R,Jogador, Y2, TNovo, TabuleiroCop).
+	conqHorAux(R,Jogador, Y2, TNovo, TNovo2).
 
 conqHorLinha([],_,_,TNovo,TNovo,_).
 conqHorLinha([Elem|R], Jogador, X, TNovo, TabuleiroCop, Y):-
 	X \== 10,
 	if(Elem = Jogador, (conqHorLinhaAux(R,Jogador, X, TNovo2, TabuleiroCop, 0, Y), X1 is X+1,
-	conqHorLinha(R, Jogador, X1, TNovo2, TabuleiroCop, Y)),(X1 is X+1,
+	conqHorLinha(R, Jogador, X1, TNovo, TNovo2, Y)),(X1 is X+1,
 	conqHorLinha(R, Jogador, X1, TNovo, TabuleiroCop, Y))).
 
-conqHorLinhaAux2(_,X,TNovo,TNovo,X2,_):- X > X2, desenha(TNovo),nl.
+conqHorLinhaAux2(_,X,TNovo,TNovo,X2,_):- X > X2.
 conqHorLinhaAux2(Elem, X, TNovo, TabuleiroCop, Xaux, Y):-
 	X =< Xaux,
 	troca(Elem, Jog2),
-	muda_tab(Jog2,0,X,Y,TabuleiroCop,TNovo),
+	muda_tab(Jog2,0,X,Y,TabuleiroCop,TNovo2),
       	X2 is X+1,
-	conqHorLinhaAux2(Elem, X2, _, TNovo, Xaux, Y).
+	conqHorLinhaAux2(Elem, X2, TNovo, TNovo2, Xaux, Y).
 
 conqHorLinhaAux([Jogador|_], Jogador, _, TNovo,TNovo,0,_).
-conqHorLinhaAux([0|_], _, _, TNovo,TNovo,0,_).
+conqHorLinhaAux([0|_], _, _, TNovo,TNovo,_,_).
+conqHorLinhaAux([_], _, _, TNovo,TNovo,_,_).
 conqHorLinhaAux([Jogador|_], Jogador, X, TNovo,TabuleiroCop,Xaux,Y):-
 	Xaux \== 0,
 	Xaux3 is Xaux+X,
 	X1 is X+1,
 	conqHorLinhaAux2(Jogador, X1, TNovo, TabuleiroCop, Xaux3, Y).
-       % conqHorLinhaAux(Tail, Jogador, X1, _, TNovo2, Xaux3, Y)
-
-conqHorLinhaAux([0|_], Jogador, X, TNovo,TabuleiroCop,Xaux,Y):-
-	Xaux \== 0,
-	Xaux3 is Xaux+X,
-	X1 is X+1,
-	conqHorLinhaAux2(Jogador, X1, TNovo, TabuleiroCop, Xaux3, Y).
-%	conqHorLinhaAux(Tail, Jogador,X, _, TNovo, Xaux3, Y).
 
 conqHorLinhaAux([],_,_,TNovo, TNovo,_,_).
 conqHorLinhaAux([Elem|R], Jogador, X, TNovo, TabuleiroCop, Xaux, Y):-
