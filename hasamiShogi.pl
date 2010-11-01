@@ -229,7 +229,24 @@ conqVerLinha([Elem|R], Jogador, X, TNovo, TabuleiroCop, Y):-
 	conqVerLinha(R, Jogador, X1, TNovo, TNovo2, Y)),(X1 is X+1,
 	conqVerLinha(R, Jogador, X1, TNovo, TabuleiroCop, Y))).
 
+% CASO EM QUE ENCONTRAMOS UMA PEÇA VAZIA
+conqVerColuna([0|Resto], Jogador, XReferencia, Y, TNovo, TabuleiroCop, Yaux, XReferencia) :- fail.
 
+% CASO EM QUE ENCONTRAMOS UMA PEÇA DO JOGADOR DEPOIS DE OUTRAS DO
+% JOGADOR CONTRARIO.
+conqVerColuna([Jogador|Resto], Jogador, XReferencia, Y, TNovo, TabuleiroCop, Yaux, XReferencia) :-
+        if((Yaux > 1), _, _). % COMPLETAR
+
+% CASO EM QUE ENCONTRAMOS UMA PEÇA DO JOGADOR CONTRARIO
+conqVerColuna([_|Resto], Jogador, XReferencia, Y, TNovo, TabuleiroCop, Yaux, XReferencia) :-
+	Y2 is Y + 1,
+	Yaux2 is Yaux + 1,
+	conqVerColuna. % SHIIIITTTTTTT Como passar para a linha seguinte se já estou dentro de uma linha?
+
+% AINDA NAO CHEGAMOS AO X CORRECTO, VAMOS AVANÇANDO DENTRO DA LINHA.
+conqVerColuna([_|Resto], Jogador, X, Y, TNovo, TabuleiroCop, Yaux, XReferencia) :-
+	X2 is X +1,
+	conqVerColuna(Resto, Jogador, X2, Y, TNovo, TabuleiroCop, Yaux, XReferencia).
 
 % ALTERA A POSICAO DA PECA DO JOGADOR
 
