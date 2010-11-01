@@ -12,11 +12,11 @@ tabuleiro(
 	  [0,0,0,0,0,0,0,0,0],
 	  [0,0,0,0,0,0,0,0,0],
 	  [0,0,0,0,0,0,0,0,0],
-	  [0,0,2,0,2,0,2,1,0],
+	  [0,0,2,2,2,0,0,1,0],
 	  [0,0,0,0,0,0,0,0,0],
 	  [0,0,0,0,0,0,0,0,0],
 	  [0,0,0,0,0,0,0,0,0],
-	  [0,0,2,2,0,0,0,0,0]]).
+	  [2,2,0,0,0,2,2,0,0]]).
 
 piece1(1):- write(' ----- |').
 piece1(2):- write(' ----- |').
@@ -210,6 +210,26 @@ conqHorLinhaAux([Elem|R], Jogador, X, TNovo, TabuleiroCop, Xaux, Y):-
       	Elem == Jogador2,
 	Xaux2 is Xaux+1,
 	conqHorLinhaAux(R, Jogador, X, TNovo, TabuleiroCop, Xaux2, Y).
+
+% VERIFICA A CONQUISTA DE PEÇAS NA VERTICAL
+
+conqVer(Tabuleiro, Jogador, TNovo, TabuleiroCop):-conqVerAux(Tabuleiro, Jogador, 1, TNovo, TabuleiroCop).
+
+conqVerAux([],_,_, TNovo, TNovo).
+conqVerAux([Linha|R], Jogador,Y, TNovo, TabuleiroCop):-
+	Y \== 10,
+	conqVerLinha(Linha, Jogador, 1, TNovo2, TabuleiroCop, Y),
+	Y2 is Y+1,
+	conqVerAux(R,Jogador, Y2, TNovo, TNovo2).
+
+conqVerLinha([],_,_,TNovo,TNovo,_).
+conqVerLinha([Elem|R], Jogador, X, TNovo, TabuleiroCop, Y):-
+	X \== 10,
+	if(Elem = Jogador, (conqVerColuna(R,Jogador, X, TNovo2, TabuleiroCop, 0, Y), X1 is X+1,
+	conqVerLinha(R, Jogador, X1, TNovo, TNovo2, Y)),(X1 is X+1,
+	conqVerLinha(R, Jogador, X1, TNovo, TabuleiroCop, Y))).
+
+
 
 % ALTERA A POSICAO DA PECA DO JOGADOR
 
