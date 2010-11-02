@@ -11,20 +11,20 @@ tabuleiro(
 	 [[1,1,1,1,0,1,1,1,1],
 	  [0,0,0,0,0,0,0,0,0],
 	  [0,0,0,0,0,0,0,0,0],
-	  [0,0,2,0,0,0,0,0,0],
-	  [0,2,2,2,2,2,2,2,1],
-	  [0,0,1,0,2,0,0,0,0],
-	  [0,0,0,2,0,0,0,0,0],
 	  [0,0,0,0,0,0,0,0,0],
-	  [0,2,2,0,0,0,0,0,0]]).
+	  [0,0,0,0,0,0,0,2,1],
+	  [0,0,1,0,0,0,0,0,0],
+	  [0,0,1,2,0,0,0,0,0],
+	  [0,0,0,0,0,0,0,0,0],
+	  [0,2,0,0,0,0,0,0,0]]).
 
 piece1(1):- write(' ----- |').
 piece1(2):- write(' ----- |').
 piece1(0):- write('       |').
 
 
-piece2(1):- write('|  a  ||').
-piece2(2):- write('|  b  ||').
+piece2(1):- write('|  1  ||').
+piece2(2):- write('|  2  ||').
 piece2(0):- write(('       |')).
 
 
@@ -260,6 +260,10 @@ conqVerColuna(Jogador, Y, TNovo, TabuleiroCop, Yaux, XReferencia) :-
 	Y2 is Y-Yaux,
 	conqVerColunaAux(Jogador, Y2, TNovo, TabuleiroCop, Y, XReferencia).
 
+conqVerColuna(Jogador, Y, TNovo, TNovo, Yaux, XReferencia) :-
+	verificaPeca(TNovo, XReferencia, Y, Jogador),
+	Yaux == 0.
+
 
 % ALTERA A POSICAO DA PECA DO JOGADOR
 
@@ -288,18 +292,14 @@ muda_linha(N,Peca,Pnov,X,[El|Resto],[El|Resto2]):-
 %VERIFICA SE O JOGO TERMINOU
 
 terminouJogo(T,Jogador) :- terminouJogoaux(T,1,1,0,Jogador).
-terminouJogoaux(_,9,9,NPecas,_):-!, NPecas < 3.
+terminouJogoaux(_,9,9,NPecas,Jogador):-!, NPecas < 3,nl,nl,nl,
+	write('Terminou o jogo. O jogador '),
+	troca(Jogador, Jogador2), write(Jogador2), write(' venceu.'),nl,nl,nl.
+
 terminouJogoaux(T,X,Y,NPecas,Jogador) :-
        	if(verificaPeca(T, X, Y, Jogador), NPecasNovo is NPecas+1, NPecasNovo is NPecas),
 	if(X == 9, (X1 is 1, Y1 is Y+1), (X1 is X+1, Y1 is Y)),
 	terminouJogoaux(T,X1,Y1,NPecasNovo, Jogador).
-
-%valida_jogada(X,Y,Tabuleiro,A,B):-.
-%posicao_ocupada(X,Y,Tabuleiro,Resposta):-.
-%verifica_caminho(X,Y,Tabuleiro,A,B, Resposta):-.
-%verifica_conquistas(Tabuleiro):-.
-
-%FIM DA AVALIACAO DA JOGADA%
 
 
 
