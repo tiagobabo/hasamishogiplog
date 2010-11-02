@@ -288,11 +288,96 @@ muda_linha(N,Peca,Pnov,X,[El|Resto],[El|Resto2]):-
 	N\=X, N2 is N+1,
 	muda_linha(N2,Peca,Pnov,X,Resto,Resto2).
 
+%COMPUTA TODAS AS JOGADAS POSSIVEIS
+
+jogadasPossiveis([],_,_,_,_,[]).
+jogadasPossiveis([H|T], Jogador, TTemp, Y, Jogadas):-
+	Y \== 10,
+	jogadasPossiveisL(H, Jogador, Jogadas, TTemp, 1, Y),
+	Y1 is Y+1,
+	jogadasPossiveis(T,Jogador, TTemp, Y1, Jogadas).
+
+jogadasPossiveisL([],_,[],_,_,_).
+jogadasPossiveisL([L|R], Jogador, Jogadas, TTemp, X,Y):-
+	X \== 10,
+	L == Jogador,!,
+	X1 is X+1,
+	Y1 is Y+1,
+	verificaJogadas(Jogador, Jogadas, TTemp, X,Y, X1, Y1),
+	jogadasPossiveisL(R, Jogador, Jogadas, TTemp, X1,Y).
+
+jogadasPossiveisL([_|R], Jogador,Jogadas, TTemp, X,Y):-
+	X \== 10,
+	X1 is X+1,
+	jogadasPossiveisL(R, Jogador, Jogadas, TTemp, X1,Y).
+
+verificaJogadas(Jogador, Jogadas, TTemp, X,Y, X1, Y1):-
+	nl,write('Horizontal:'),nl,
+	verificaHFrente(Jogador, Jogadas, TTemp, X,Y, X1),
+	X2 is X1-2,
+        verificaHTras(Jogador, Jogadas, TTemp, X,Y, X2),nl,nl,
+	write('Vertical'),nl,
+	verificaVFrente(Jogador, Jogadas, TTemp, X,Y, Y1),
+	Y2 is Y1-1,
+	verificaVTras(Jogador, Jogadas, TTemp, X,Y, Y2).
+
+verificaVFrente(_,[],_,_,_,Y1):-Y1 >=10.
+verificaVFrente(Jogador, Jogadas, TTemp, X,Y, Y1):-
+	Y1 \== 10,
+	validaCaminho(TTemp,X,Y,X,Y1,Jogador),!,
+	Y2 is Y1+1,
+	write([X,Y,X,Y1]),
+      	verificaVFrente(Jogador, Jogadas, TTemp, X, Y, Y2).
+
+verificaVFrente(Jogador, Jogadas, TTemp, X,Y, Y1):-
+	Y1 < 10,
+	Y2 is Y1+1,
+	verificaVFrente(Jogador, Jogadas, TTemp, X, Y, Y2).
+
+verificaVTras(_,[],_,_,_,Y1):-Y1 =<0.
+verificaVTras(Jogador, Jogadas, TTemp, X,Y, Y1):-
+	Y1 \== 0,
+	validaCaminho(TTemp,X,Y,X,Y1,Jogador),!,
+	Y2 is Y1-1,
+	write([X,Y,X,Y1]),
+      	verificaVTras(Jogador, Jogadas, TTemp, X, Y, Y2).
+
+verificaVTras(Jogador, Jogadas, TTemp, X,Y, Y1):-
+	Y1 > 0,
+	Y2 is Y1-1,
+	verificaVTras(Jogador, Jogadas, TTemp, X, Y, Y2).
+
+verificaHFrente(_,[],_,_,_,X1):-X1 >=10.
+verificaHFrente(Jogador, Jogadas, TTemp, X,Y, X1):-
+	X1 \== 10,
+	validaCaminho(TTemp,X,Y,X1,Y,Jogador),!,
+	X2 is X1+1,
+	write([X,Y,X1,Y]),
+      	verificaHFrente(Jogador, Jogadas, TTemp, X, Y, X2).
+
+verificaHFrente(Jogador, Jogadas, TTemp, X,Y, X1):-
+	X1 < 10,
+	X2 is X1+1,
+	verificaHFrente(Jogador, Jogadas, TTemp, X, Y, X2).
+
+verificaHTras(_,[],_,_,_,X1):-X1 =<0.
+verificaHTras(Jogador, Jogadas, TTemp, X,Y, X1):-
+	X1 \== 0,
+	validaCaminho(TTemp,X,Y,X1,Y,Jogador),!,
+	X2 is X1-1,
+	write([X,Y,X1,Y]),
+      	verificaHTras(Jogador, Jogadas, TTemp, X, Y, X2).
+
+verificaHTras(Jogador, Jogadas, TTemp, X,Y, X1):-
+	X1 > 0,
+	X2 is X1-1,
+	verificaHTras(Jogador, Jogadas, TTemp, X, Y, X2).
+
 
 %VERIFICA SE O JOGO TERMINOU
 
 terminouJogo(T,Jogador) :- terminouJogoaux(T,1,1,0,Jogador).
-terminouJogoaux(_,9,9,NPecas,Jogador):-!, NPecas < 3,nl,nl,nl,
+terminouJogoaux(T,9,9,NPecas,Jogador):-!, NPecas < 3,desenha(T),nl,nl,nl,
 	write('Terminou o jogo. O jogador '),
 	troca(Jogador, Jogador2), write(Jogador2), write(' venceu.'),nl,nl,nl.
 
