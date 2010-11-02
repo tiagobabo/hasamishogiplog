@@ -12,11 +12,11 @@ tabuleiro(
 	  [0,0,0,0,0,0,0,0,0],
 	  [0,0,0,0,0,0,0,0,0],
 	  [0,0,2,0,0,0,0,0,0],
-	  [0,1,2,0,1,0,0,1,0],
+	  [0,2,2,2,2,2,2,2,1],
 	  [0,0,1,0,2,0,0,0,0],
 	  [0,0,0,2,0,0,0,0,0],
 	  [0,0,0,0,0,0,0,0,0],
-	  [0,0,0,0,0,0,0,0,0]]).
+	  [0,2,2,0,0,0,0,0,0]]).
 
 piece1(1):- write(' ----- |').
 piece1(2):- write(' ----- |').
@@ -103,9 +103,15 @@ verifica(stop).
 troca(1,2).
 troca(2,1).
 
-if(Condition, TrueClause, FalseClause) :-
-	Condition, !, TrueClause;
-       !, FalseClause.
+:-op(800,fx,se).
+:-op(900,xfx,entao).
+:-op(800,xfx,senao).
+
+se A entao B senao _ :- A,!,B.
+se _ entao _ senao C :- C.
+
+if(A,B,_):-A,!,B.
+if(_,_,C):-C.
 
 
 cicloJogo(T, Jogador):-
@@ -132,9 +138,10 @@ cicloJogo(T, Jogador):-
 	muda_tab(Jogador,0,X,Y,TNovo,TNovo2),
 	troca(Jogador, Jogador2),
 	conqHor(TNovo2, Jogador, TNovo3, TNovo2),
-	write('a'), nl,
-	conqVer(TNovo3, Jogador, TNovo4, TNovo3),
-	if(terminouJogo(TNovo4,Jogador2),menu,cicloJogo(TNovo4, Jogador2))), cicloJogo(T, Jogador)).
+	conqHor(TNovo3, Jogador2, TNovo4, TNovo3),
+	conqVer(TNovo4, Jogador, TNovo5, TNovo4),
+        conqVer(TNovo5, Jogador2, TNovo6, TNovo5),
+	if(terminouJogo(TNovo6,Jogador2),menu,cicloJogo(TNovo6, Jogador2))), cicloJogo(T, Jogador)).
 
 % VERIFICA SE A PECA E' DO UTLIZADOR
 
@@ -149,8 +156,8 @@ verificaPecaAux([_|R],X,Y,Jogador,Linha) :-
 verificaPecaLinha([Jogador|_], X, Jogador,  X).
 verificaPecaLinha([], _, _, _).
 verificaPecaLinha([_|R], X, Jogador, Coluna) :- Coluna\==X,
-			          N1 is Coluna+1,
-				  verificaPecaLinha(R, X, Jogador, N1).
+	N1 is Coluna+1,
+	verificaPecaLinha(R, X, Jogador, N1).
 
 % VERIFICA SE A JOGADA E' VALIDA
 
@@ -197,7 +204,6 @@ conqHorLinhaAux2(Elem, X, TNovo, TabuleiroCop, Xaux, Y):-
 
 conqHorLinhaAux([Jogador|_], Jogador, _, TNovo,TNovo,0,_).
 conqHorLinhaAux([0|_], _, _, TNovo,TNovo,_,_).
-conqHorLinhaAux([_], _, _, TNovo,TNovo,_,_).
 conqHorLinhaAux([Jogador|_], Jogador, X, TNovo,TabuleiroCop,Xaux,Y):-
 	Xaux \== 0,
 	Xaux3 is Xaux+X,
@@ -210,7 +216,7 @@ conqHorLinhaAux([Elem|R], Jogador, X, TNovo, TabuleiroCop, Xaux, Y):-
       	Elem == Jogador2,
 	Xaux2 is Xaux+1,
 	conqHorLinhaAux(R, Jogador, X, TNovo, TabuleiroCop, Xaux2, Y).
-
+conqHorLinhaAux([_], _, _, TNovo,TNovo,_,_).
 % VERIFICA A CONQUISTA DE PEÇAS NA VERTICAL
 
 conqVer(Tabuleiro, Jogador, TNovo, TabuleiroCop):-conqVerAux(Tabuleiro, Jogador, 1, TNovo, TabuleiroCop).
@@ -225,36 +231,34 @@ conqVerAux([Linha|R], Jogador,Y, TNovo, TabuleiroCop):-
 conqVerLinha([],_,_,TNovo,TNovo,_).
 conqVerLinha([Elem|R], Jogador, X, TNovo, TabuleiroCop, Y):-
 	X \== 10,
-	if(Elem = Jogador, (conqVerColuna(Jogador, Y, TNovo2, TabuleiroCop, 0, X), X1 is X+1,
+	if(Elem = Jogador, (Y1 is Y+1, conqVerColuna(Jogador, Y1, TNovo2, TabuleiroCop, 0, X), X1 is X+1,
 	conqVerLinha(R, Jogador, X1, TNovo, TNovo2, Y)),(X1 is X+1,
 	conqVerLinha(R, Jogador, X1, TNovo, TabuleiroCop, Y))).
 
-conqVerColunaAux(_,Y,TNovo,TNovo,Y2,_):- Y > Y2,desenha(TNovo),!.
 conqVerColunaAux(Elem, Y, TNovo, TabuleiroCop, Yaux, XReferencia):-
 	Y =< Yaux,
 	troca(Elem, Jog2),
 	muda_tab(Jog2,0,XReferencia,Y,TabuleiroCop,TNovo2),
       	Y2 is Y+1,
-	conqVerColunaAux(Elem, Y2, TNovo, TNovo2, Yaux, Y).
+	conqVerColunaAux(Elem, Y2, TNovo, TNovo2, Yaux, XReferencia).
+conqVerColunaAux(_,Y,TNovo,TNovo,Y2,_):- Y == Y2.
 
 
-conqVerColuna(-1, _, TNovo, TNovo,_, _):-!.
-conqVerColuna(_, Y, TNovo, TabuleiroCop,_, XReferencia):-
-	verificaPeca(TabuleiroCop, XReferencia, Y, 0),
-	conqVerColuna(-1, Y, TNovo, TabuleiroCop,_, XReferencia),!.
+conqVerColuna(_, Y, TNovo, TNovo,_, XReferencia):-
+	verificaPeca(TNovo, XReferencia, Y, 0).
 
 conqVerColuna(Jogador, Y, TNovo, TabuleiroCop, Yaux, XReferencia) :-
 	troca(Jogador,Jogador2),
 	verificaPeca(TabuleiroCop, XReferencia, Y, Jogador2),
 	Y1 is Y+1,
 	Yaux2 is Yaux + 1,
-	conqVerColuna(Jogador,Y1,TNovo,TabuleiroCop, Yaux2,XReferencia),!.
+	conqVerColuna(Jogador,Y1,TNovo,TabuleiroCop, Yaux2,XReferencia).
 
 conqVerColuna(Jogador, Y, TNovo, TabuleiroCop, Yaux, XReferencia) :-
 	verificaPeca(TabuleiroCop, XReferencia, Y, Jogador),
+	Yaux > 0,
 	Y2 is Y-Yaux,
-	write('passei'),nl,
-	conqVerColunaAux(Jogador, Y2, TNovo, TabuleiroCop, Y, XReferencia),!.
+	conqVerColunaAux(Jogador, Y2, TNovo, TabuleiroCop, Y, XReferencia).
 
 
 % ALTERA A POSICAO DA PECA DO JOGADOR
