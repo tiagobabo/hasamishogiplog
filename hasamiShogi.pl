@@ -8,15 +8,15 @@ letra(a, 1). letra(b, 2). letra(c, 3). letra(d, 4). letra(e, 5). letra(f, 6). le
 linhaDivH:-printLinha([' ',*,' ',-,-,-,-,-,-,-,-,-,-,-,-,-,-,-,-,-,-,-,-,-,-,-,-,-,-,-,-,-,-,-,-,-,-,-,-,-,-,-,-,-,-,-,-,-,-,-,-,-,-,-,-,-,-,-,-,-,-,-,-,-,-,-,-,-,-,-,-,-,-,-,' ',*]).
 
 tabuleiro(
-	 [[1,1,1,1,1,1,1,1,1],
+	 [[1,1,1,1,0,1,1,1,1],
 	  [0,0,0,0,0,0,0,0,0],
 	  [0,0,0,0,0,0,0,0,0],
+	  [0,0,2,0,0,0,0,0,0],
+	  [0,1,2,0,1,0,0,1,0],
+	  [0,0,1,0,2,0,0,0,0],
+	  [0,0,0,2,0,0,0,0,0],
 	  [0,0,0,0,0,0,0,0,0],
-	  [0,0,2,2,2,0,0,1,0],
-	  [0,0,0,0,0,0,0,0,0],
-	  [0,0,0,0,0,0,0,0,0],
-	  [0,0,0,0,0,0,0,0,0],
-	  [2,2,0,0,0,2,2,0,0]]).
+	  [0,0,0,0,0,0,0,0,0]]).
 
 piece1(1):- write(' ----- |').
 piece1(2):- write(' ----- |').
@@ -133,7 +133,7 @@ cicloJogo(T, Jogador):-
 	troca(Jogador, Jogador2),
 	conqHor(TNovo2, Jogador, TNovo3, TNovo2),
 	write('a'), nl,
-	conqHor(TNovo3, Jogador2, TNovo4, TNovo3),
+	conqVer(TNovo3, Jogador, TNovo4, TNovo3),
 	if(terminouJogo(TNovo4,Jogador2),menu,cicloJogo(TNovo4, Jogador2))), cicloJogo(T, Jogador)).
 
 % VERIFICA SE A PECA E' DO UTLIZADOR
@@ -225,28 +225,37 @@ conqVerAux([Linha|R], Jogador,Y, TNovo, TabuleiroCop):-
 conqVerLinha([],_,_,TNovo,TNovo,_).
 conqVerLinha([Elem|R], Jogador, X, TNovo, TabuleiroCop, Y):-
 	X \== 10,
-	if(Elem = Jogador, (conqVerColuna(R,Jogador, X, TNovo2, TabuleiroCop, 0, Y), X1 is X+1,
+	if(Elem = Jogador, (conqVerColuna(Jogador, Y, TNovo2, TabuleiroCop, 0, X), X1 is X+1,
 	conqVerLinha(R, Jogador, X1, TNovo, TNovo2, Y)),(X1 is X+1,
 	conqVerLinha(R, Jogador, X1, TNovo, TabuleiroCop, Y))).
 
-% CASO EM QUE ENCONTRAMOS UMA PEÇA VAZIA
-conqVerColuna([0|Resto], Jogador, XReferencia, Y, TNovo, TabuleiroCop, Yaux, XReferencia) :- fail.
+conqVerColunaAux(_,Y,TNovo,TNovo,Y2,_):- Y > Y2,desenha(TNovo),!.
+conqVerColunaAux(Elem, Y, TNovo, TabuleiroCop, Yaux, XReferencia):-
+	Y =< Yaux,
+	troca(Elem, Jog2),
+	muda_tab(Jog2,0,XReferencia,Y,TabuleiroCop,TNovo2),
+      	Y2 is Y+1,
+	conqVerColunaAux(Elem, Y2, TNovo, TNovo2, Yaux, Y).
 
-% CASO EM QUE ENCONTRAMOS UMA PEÇA DO JOGADOR DEPOIS DE OUTRAS DO
-% JOGADOR CONTRARIO.
-conqVerColuna([Jogador|Resto], Jogador, XReferencia, Y, TNovo, TabuleiroCop, Yaux, XReferencia) :-
-        if((Yaux > 1), _, _). % COMPLETAR
 
-% CASO EM QUE ENCONTRAMOS UMA PEÇA DO JOGADOR CONTRARIO
-conqVerColuna([_|Resto], Jogador, XReferencia, Y, TNovo, TabuleiroCop, Yaux, XReferencia) :-
-	Y2 is Y + 1,
+conqVerColuna(-1, _, TNovo, TNovo,_, _):-!.
+conqVerColuna(_, Y, TNovo, TabuleiroCop,_, XReferencia):-
+	verificaPeca(TabuleiroCop, XReferencia, Y, 0),
+	conqVerColuna(-1, Y, TNovo, TabuleiroCop,_, XReferencia),!.
+
+conqVerColuna(Jogador, Y, TNovo, TabuleiroCop, Yaux, XReferencia) :-
+	troca(Jogador,Jogador2),
+	verificaPeca(TabuleiroCop, XReferencia, Y, Jogador2),
+	Y1 is Y+1,
 	Yaux2 is Yaux + 1,
-	conqVerColuna. % SHIIIITTTTTTT Como passar para a linha seguinte se já estou dentro de uma linha?
+	conqVerColuna(Jogador,Y1,TNovo,TabuleiroCop, Yaux2,XReferencia),!.
 
-% AINDA NAO CHEGAMOS AO X CORRECTO, VAMOS AVANÇANDO DENTRO DA LINHA.
-conqVerColuna([_|Resto], Jogador, X, Y, TNovo, TabuleiroCop, Yaux, XReferencia) :-
-	X2 is X +1,
-	conqVerColuna(Resto, Jogador, X2, Y, TNovo, TabuleiroCop, Yaux, XReferencia).
+conqVerColuna(Jogador, Y, TNovo, TabuleiroCop, Yaux, XReferencia) :-
+	verificaPeca(TabuleiroCop, XReferencia, Y, Jogador),
+	Y2 is Y-Yaux,
+	write('passei'),nl,
+	conqVerColunaAux(Jogador, Y2, TNovo, TabuleiroCop, Y, XReferencia),!.
+
 
 % ALTERA A POSICAO DA PECA DO JOGADOR
 
