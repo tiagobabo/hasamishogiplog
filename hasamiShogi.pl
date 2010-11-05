@@ -255,6 +255,12 @@ conqVerLinha([],_,_,TNovo,TNovo,_).
 conqVerLinha([Elem|R], Jogador, X, TNovo, TabuleiroCop, Y):-
 	X \== 10,
 	if(Elem = Jogador, (Y1 is Y+1, conqVerColuna(Jogador, Y1, TNovo2, TabuleiroCop, 0, X), X1 is X+1,
+	conqVerLinha(R, Jogador, X1, TNovo, TNovo2, Y)),(X1 is X+1,
+	conqVerLinha(R, Jogador, X1, TNovo, TabuleiroCop, Y))).
+
+conqVerLinha([Elem|R], Jogador, X, TNovo, TabuleiroCop, Y):-
+	X \== 10,
+	if(Elem = Jogador, (Y1 is Y+1, conqVerColuna(Jogador, Y1, TNovo2, TabuleiroCop, 0, X), X1 is X+1,
 	conqVerLinha(R, Jogador, X1, TNovo, TNovo2, Y)),(X1 is X+1,conqVerLinha(R, Jogador, X1, TNovo, TabuleiroCop, Y))).
 
 conqVerColunaAux(Elem, Y, TNovo, TabuleiroCop, Yaux, XReferencia):-
