@@ -144,13 +144,13 @@ modoJogador(T, Jogador, ModoCPU):-
 	Jogador == 1,
 	desenha(T), nl,
 	interaccaoJogador(Y,X,Yf,Xf,Jogador),
-	if((verificaPeca(T, Xf,Yf,0),verificaPeca(T,X,Y,Jogador), validaCaminho(T, X,Y,Xf,Yf,Jogador)),
+	if((verificaPeca(T, Xf,Yf,0),verificaPeca(T,X,Y,Jogador), verificaCaminho(Jogador,X,Y,Xf,Yf,T)),
 	(muda_tab(0,Jogador,Xf,Yf,T,TNovo),
 	muda_tab(Jogador,0,X,Y,TNovo,TNovo2),
 	troca(Jogador, Jogador2),
 	conquistaPecas(TNovo2, TNovo3, Jogador),
 	conquistaPecas(TNovo3, TNovo4, Jogador2),
-	if(terminouJogo(TNovo4,Jogador2),menu,modoCPU(TNovo4, Jogador2, ModoCPU))), modoJogador(T, Jogador)).
+	if(terminouJogo(TNovo4,Jogador2),menu,modoCPU(TNovo4, Jogador2, ModoCPU))), modoJogador(T, Jogador,ModoCPU)).
 
 % CICLO DO BOT DEPENDENDO DA DIFICULDADE ESCOLHIDA
 modoCPU(T, Jogador, ModoCPU):-
@@ -225,23 +225,6 @@ verificaPecaLinha([Jogador|_], X, Jogador, X).
 verificaPecaLinha([_|R], X, Jogador, Coluna) :-
 	N1 is Coluna+1,
 	verificaPecaLinha(R, X, Jogador, N1).
-
-% VERIFICA SE A JOGADA E' VALIDA
-
-validaCaminho(_,Xf,Yf,X,Y,_):-Xf \== X, Yf \== Y, fail.
-validaCaminho(T,Xf,Yf,Xf,Yf,_) :- verificaPeca(T,Xf,Yf,0).
-
-validaCaminho(T,Xf,Y,Xf,Yf,Jogador) :-
-	Y \== Yf,
-	if(Yf > Y, Y2 is Y+1, Y2 is Y-1),
-        verificaPeca(T,Xf,Y2, 0),
-        validaCaminho(T,Xf,Y2,Xf,Yf,Jogador).
-
-validaCaminho(T,X,Yf,Xf,Yf,Jogador) :-
-	X \== Xf,
-	if(Xf > X, X2 is X+1, X2 is X-1),
-	verificaPeca(T,X2,Yf,0),
-	validaCaminho(T,X2,Yf,Xf,Yf,Jogador).
 
 % VERIFICA SE HA UM CAMINHO ENTRE PECAS
 
