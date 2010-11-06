@@ -126,7 +126,6 @@ interaccaoJogador(Y,X,Yf,Xf,Jogador):-
 	read(Xt2),
 	letra(Xt2, Xf).
 
-
 cicloJogo(T, Jogador):-
 	Jogador == 1,
 	desenha(T), nl,
@@ -305,16 +304,4 @@ terminouJogoaux(T,X,Y,NPecas,Jogador) :-
        	if(verificaPeca(T, X, Y, Jogador), NPecasNovo is NPecas+1, NPecasNovo is NPecas),
 	if(X == 9, (X1 is 1, Y1 is Y+1), (X1 is X+1, Y1 is Y)),
 	terminouJogoaux(T,X1,Y1,NPecasNovo, Jogador).
-
-
-
-
-
-
-
-
-
-
-
-
 
