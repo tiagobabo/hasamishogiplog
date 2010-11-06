@@ -12,9 +12,9 @@ tabuleiro(
 	  [0,0,0,0,0,0,0,0,0],
 	  [0,0,0,0,0,0,0,0,0],
 	  [0,0,0,0,0,0,0,0,0],
+	  [0,0,1,2,0,0,0,0,0],
 	  [0,0,0,0,0,0,0,0,0],
-	  [0,0,0,0,0,0,0,0,0],
-	  [0,0,0,0,0,0,0,0,0],
+	  [0,0,1,2,2,0,1,0,0],
 	  [0,0,0,0,0,0,0,0,0],
 	  [2,2,2,2,2,2,2,2,2]]).
 
@@ -88,13 +88,27 @@ menu:-
     write('stop - para sair'),nl,
     write('Escolha uma opcao'),nl,
     read(X),
-    write(X),
     verifica(X).
 
-verifica(1):-tabuleiro(T), cicloJogo(T, 1), !.
+verifica(1):-jVsCpu, !.
 verifica(2):-tabuleiro(T), desenha(T), !.
 verifica(3):-tabuleiro(T), desenha(T), !.
-verifica(stop).
+verifica(_).
+
+jVsCpu:-
+	write('1 - Fácil'),nl,
+	write('2 - Intermédio'), nl,
+	write('3 - Difícil'),nl,
+	write('stop - para sair'),nl,
+	read(X),
+	write(X),
+	dificuldade(X).
+
+dificuldade(1):-tabuleiro(T), modoJogador(T, 1, 1), !.
+dificuldade(2):-tabuleiro(T), modoJogador(T, 1, 2), !.
+dificuldade(3):-jVsCpu, !.
+dificuldade(_).
+
 
 %FIM DO DESENHO DO JOGO
 
@@ -126,7 +140,7 @@ interaccaoJogador(Y,X,Yf,Xf,Jogador):-
 	read(Xt2),
 	letra(Xt2, Xf).
 
-cicloJogo(T, Jogador):-
+modoJogador(T, Jogador, ModoCPU):-
 	Jogador == 1,
 	desenha(T), nl,
 	interaccaoJogador(Y,X,Yf,Xf,Jogador),
@@ -136,9 +150,11 @@ cicloJogo(T, Jogador):-
 	troca(Jogador, Jogador2),
 	conquistaPecas(TNovo2, TNovo3, Jogador),
 	conquistaPecas(TNovo3, TNovo4, Jogador2),
-	if(terminouJogo(TNovo4,Jogador2),menu,cicloJogo(TNovo4, Jogador2))), cicloJogo(T, Jogador)).
-% CICLO DO BOT
-cicloJogo(T, Jogador):-
+	if(terminouJogo(TNovo4,Jogador2),menu,modoCPU(TNovo4, Jogador2, ModoCPU))), modoJogador(T, Jogador)).
+
+% CICLO DO BOT DEPENDENDO DA DIFICULDADE ESCOLHIDA
+modoCPU(T, Jogador, ModoCPU):-
+	ModoCPU == 1,
 	Jogador == 2,
 	findall(X-Y-Xf-Yf, verificaCaminho(Jogador, X,Y,Xf,Yf, T), L),
 	choose(L, M),
@@ -146,8 +162,43 @@ cicloJogo(T, Jogador):-
 	conquistaPecas(TNovo2, TNovo3, Jogador),
 	conquistaPecas(TNovo3, TNovo4, Jogador2),
 	troca(Jogador, Jogador2),
-	if(terminouJogo(TNovo4,Jogador2),menu,cicloJogo(TNovo4, Jogador2)).
+	if(terminouJogo(TNovo4,Jogador2),menu,modoJogador(TNovo4, Jogador2, ModoCPU)).
 
+% MODO INTERMEDIO
+modoCPU(T, Jogador, ModoCPU):-
+	ModoCPU == 2,
+	Jogador == 2,
+	greedy(T,L,1,X, Jogador),
+	L == X,!,
+	findall(X-Y-Xf-Yf, verificaCaminho(Jogador, X,Y,Xf,Yf, T),L1),
+	choose(L1, M),
+	modificaT(Jogador,M,T, TNovo2),
+	conquistaPecas(TNovo2, TNovo3, Jogador),
+	conquistaPecas(TNovo3, TNovo4, Jogador2),
+	troca(Jogador, Jogador2),
+	if(terminouJogo(TNovo4,Jogador2),menu,modoJogador(TNovo4, Jogador2, ModoCPU)).
+
+modoCPU(T, Jogador, ModoCPU):-
+	ModoCPU == 2,
+	Jogador == 2,
+	greedy(T,L,1,X,Jogador),
+	\+ L == X,
+	choose(L, M),
+	modificaT(Jogador,M,T, TNovo2),
+	conquistaPecas(TNovo2, TNovo3, Jogador),
+	conquistaPecas(TNovo3, TNovo4, Jogador2),
+	troca(Jogador, Jogador2),
+	if(terminouJogo(TNovo4,Jogador2),menu,modoJogador(TNovo4, Jogador2, ModoCPU)).
+
+
+greedy(T,L, P, _, J):-
+	findall(X-Y-Xf-Yf,(verificaCaminho(J,X,Y,Xf,Yf,T),modificaT(J,X-Y-Xf-Yf,T,TNovo2),conquistas(J,_,_,_,_,TNovo2,1,N),N>P),L1),
+	\+ L1 = [],
+	P1 is P+1,
+	greedy(T,L,P1,L1,J), !.
+greedy(_,L, _, L,_).
+
+% FIM DO BOT INTERMEDIO
 modificaT(J,X-Y-Xf-Yf,T,TNovo):-
 	muda_tab(J,0,X,Y,T,NovoTab),
 	muda_tab(0,J,Xf,Yf,NovoTab,TNovo).
@@ -200,6 +251,8 @@ adjacente(X1,Y1,X2,Y2):-Y1 == Y2, X1 =:= X2+1.
 adjacente(X1,Y1,X2,Y2):-Y1 == Y2, X1 =:= X2-1.
 adjacente2(X1,Y1,X2,Y2):-X1 == X2, Y1 =:= Y2+1.
 adjacente2(X1,Y1,X2,Y2):-Y1 == Y2, X1 =:= X2+1.
+adjacente3(X1,Y1,X2,Y2):-X1 == X2, Y1 =:= Y2-1.
+adjacente3(X1,Y1,X2,Y2):-Y1 == Y2, X1 =:= X2-1.
 diagonal(X1,Y1,X2,Y2):-X1==X2,  Y1\==Y2.
 diagonal(X1,Y1,X2,Y2):-Y1==Y2,  X1\==X2.
 
@@ -220,7 +273,7 @@ verificaCaminho(Jog, X,Y,Xf,Yf, Tab):-
 
 % PROCESSA TODAS AS CONQUISTAS
 conquistaPecas(Tab, NovoTab, Jog):-
-	findall(X-Y-Xf-Yf, conquistas(Jog, X,Y,Xf,Yf,Tab,1), L),
+	findall(X-Y-Xf-Yf, conquistas(Jog, X,Y,Xf,Yf,Tab,1,_), L),
 	processaRemocoes(L, Tab, NovoTab, Jog).
 
 % CHAMA A FUNCAO PARA REMOVER AS PECAS PARA CADA CONQUISTA
@@ -255,11 +308,11 @@ retiraPecas(X1,Y,X2,Y, Tab, NovoTab2, Jog):-
 
 % RETORNA UMA CONQUISTA
 
-conquistas(_, X,Y,Xf,Yf, _, N):-
+conquistas(_, X,Y,Xf,Yf, _, N, N):-
 	N > 1,
-	adjacente(X,Y,Xf,Yf).
+	adjacente3(X,Y,Xf,Yf).
 
-conquistas(Jog, X,Y,Xf,Yf, Tab, N):-
+conquistas(Jog, X,Y,Xf,Yf, Tab, N, Cont):-
 	verificaPeca(Tab, X,Y, Jog),
 	verificaPeca(Tab, Xf,Yf, Jog),
 	troca(Jog, Jog2),
@@ -268,7 +321,7 @@ conquistas(Jog, X,Y,Xf,Yf, Tab, N):-
 	adjacente2(Xa,Ya,X,Y),
       	muda_tab(Jog2,Jog,Xa,Ya,Tab,NovoTab),
 	N1 is N+1,
-      	conquistas(Jog, Xa, Ya, Xf, Yf, NovoTab, N1).
+      	conquistas(Jog, Xa, Ya, Xf, Yf, NovoTab, N1,Cont).
 
 % ALTERA A POSICAO DA PECA DO JOGADOR
 
