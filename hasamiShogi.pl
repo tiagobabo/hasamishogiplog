@@ -1,10 +1,20 @@
-%DESENHAR O TABULEIRO
+%UTILITARIOS
 
+conv(Let,Valor):- maiuscula(Let), Valor is Let-64.
+conv(Let,Valor):- minuscula(Let), Valor is Let-96.
+conv(Let,Valor):- numero(Let), Valor is Let-48.
+
+maiuscula(Let):- Let>=65, Let=<74.
+minuscula(Let):- Let>=97, Let=<106.
+numero(Let):- Let>=49, Let=<58.
+
+letra(a, 1). letra(b, 2). letra(c, 3). letra(d, 4). letra(e, 5). letra(f, 6). letra(g, 7). letra(h, 8). letra(i, 9).
+
+
+%DESENHAR O TABULEIRO
 linhaLimite:-printLinha([' ',*,*,*,*,*,*,*,*,*,*,*,*,*,*,*,*,*,*,*,*,*,*,*,*,*,*,*,*,*,*,*,*,*,*,*,*,*,*,*,*,*,*,*,*,*,*,*,*,*,*,*,*,*,*,*,*,*,*,*,*,*,*,*,*,*,*,*,*,*,*,*,*,*,*,*,' ']).
 linhaLetras:-printLinha([' ',' ',' ',' ',' ',' ','A',' ',' ',' ',' ',' ',' ',' ','B',' ',' ',' ',' ',' ',' ',' ','C',' ',' ',' ',' ',' ',' ',' ','D',' ',' ',' ',' ',' ',' ',' ','E',' ',' ',' ',' ',' ',' ',' ','F',' ',' ',' ',' ',' ',' ',' ','G',' ',' ',' ',' ',' ',' ',' ','H',' ',' ',' ',' ',' ',' ',' ','I',' ',' ',' ',' ',' ']).
 linhaNumerosV(['1','2','3','4','5','6','7','8','9']).
-letra(a, 1). letra(b, 2). letra(c, 3). letra(d, 4). letra(e, 5). letra(f, 6). letra(g, 7). letra(h, 8). letra(i, 9).
-
 linhaDivH:-printLinha([' ',*,' ',-,-,-,-,-,-,-,-,-,-,-,-,-,-,-,-,-,-,-,-,-,-,-,-,-,-,-,-,-,-,-,-,-,-,-,-,-,-,-,-,-,-,-,-,-,-,-,-,-,-,-,-,-,-,-,-,-,-,-,-,-,-,-,-,-,-,-,-,-,-,-,' ',*]).
 
 tabuleiro(
@@ -12,9 +22,9 @@ tabuleiro(
 	  [0,0,0,0,0,0,0,0,0],
 	  [0,0,0,0,0,0,0,0,0],
 	  [0,0,0,0,0,0,0,0,0],
-	  [0,0,1,2,0,0,0,0,0],
 	  [0,0,0,0,0,0,0,0,0],
-	  [0,0,1,2,2,0,1,0,0],
+	  [0,0,0,0,0,0,0,0,0],
+	  [0,0,0,0,0,0,0,0,0],
 	  [0,0,0,0,0,0,0,0,0],
 	  [2,2,2,2,2,2,2,2,2]]).
 
@@ -22,97 +32,62 @@ piece1(1):- write(' ----- |').
 piece1(2):- write(' ----- |').
 piece1(0):- write('       |').
 
-
-piece2(1):- write('|  a  ||').
-piece2(2):- write('|  b  ||').
+piece2(1):- write('|  1  ||').
+piece2(2):- write('|  2  ||').
 piece2(0):- write(('       |')).
-
 
 piece3(1):- write(' ----- |').
 piece3(2):- write(' ----- |').
 piece3(0):- write('       |').
 
 printLinhaPeca([]).
-printLinhaPeca([A|R]):-
-	piece1(A),
-	printLinhaPeca(R).
-
+printLinhaPeca([A|R]):-	piece1(A), printLinhaPeca(R).
 printLinhaPeca3([]).
-printLinhaPeca3([A|R]):-
-	piece3(A),
-	printLinhaPeca3(R).
-
+printLinhaPeca3([A|R]):-piece3(A), printLinhaPeca3(R).
 printLinhaPeca2([]).
-printLinhaPeca2([A|R]):-
-	piece2(A),
-	printLinhaPeca2(R).
-
-
+printLinhaPeca2([A|R]):-piece2(A), printLinhaPeca2(R).
 printLinha([]).
-printLinha([A|R]):-
-	write(A),
-	printLinha(R).
-
-
+printLinha([A|R]):-write(A), printLinha(R).
 printPecas([],[]).
-printPecas([A|R],[X|Y]):-
-	write(' *|'),
-	printLinhaPeca(A),
-	write('*'), nl,
-	write(X),
-	write('*|'),
-	printLinhaPeca2(A),
-	write('*'), nl,
-	write(' *|'),
-	printLinhaPeca3(A),
-	write('*'), nl,
-	linhaDivH, nl,
-	printPecas(R, Y).
+printPecas([A|R],[X|Y]):- write(' *|'), printLinhaPeca(A), write('*'), nl, write(X), write('*|'), printLinhaPeca2(A), write('*'), nl, write(' *|'), printLinhaPeca3(A), write('*'), nl, linhaDivH, nl, printPecas(R, Y).
 
-desenha(Tabuleiro):-
-	linhaNumerosV(X),
-	linhaLetras, nl,
-	linhaLimite, nl,
-	linhaDivH, nl,
-	printPecas(Tabuleiro,X),
-	linhaLimite.
+desenha(Tabuleiro):- linhaNumerosV(X),linhaLetras, nl, linhaLimite, nl, linhaDivH, nl,printPecas(Tabuleiro,X),linhaLimite.
 
 %FIM DO DESENHO DO TABULEIRO
 
-%MENU DO JOGO
+%ESCOLHA DOS MODOS DE JOGO
 
 menu:-
     write('1 - Jogador vs CPU'),nl,
     write('2 - Jogador vs Jogador'),nl,
     write('3 - CPU vs CPU'),nl,
-    write('stop - para sair'),nl,
-    write('Escolha uma opcao'),nl,
-    read(X),
-    verifica(X).
+    write('4 - para sair'),nl,
+    repeat,write('Escolha uma opcao (ex: 1) : '), get_code(Op),skip_line,Op>=49, Op=<52,conv(Op,Esc),
+    verifica(Esc).
 
 verifica(1):-jVsCpu, !.
 verifica(2):-tabuleiro(T), desenha(T), !.
 verifica(3):-tabuleiro(T), desenha(T), !.
 verifica(_).
 
+%MODO JOGADOR VS CPU
+
 jVsCpu:-
 	write('1 - Fácil'),nl,
 	write('2 - Intermédio'), nl,
 	write('3 - Difícil'),nl,
-	write('stop - para sair'),nl,
-	read(X),
-	write(X),
-	dificuldade(X).
+	write('4 - para sair'),nl,
+	repeat,write('Opcao (Ex: 1) : '), get_code(Op),skip_line,Op>=49, Op=<52,conv(Op,Esc),
+	dificuldade(Esc).
 
 dificuldade(1):-tabuleiro(T), modoJogador(T, 1, 1), !.
 dificuldade(2):-tabuleiro(T), modoJogador(T, 1, 2), !.
 dificuldade(3):-jVsCpu, !.
 dificuldade(_).
 
+%FIM DA ESCOLHA DOS MODOS DE JOGO
 
-%FIM DO DESENHO DO JOGO
-
-%AVALIACAO DA JOGADA%
+%AVALIACAO DA JOGADA
 
 troca(1,2).
 troca(2,1).
@@ -121,36 +96,28 @@ if(Condition, TrueClause, FalseClause) :-
 	Condition, !, TrueClause;
        !, FalseClause.
 
-interaccaoJogador(Y,X,Yf,Xf,Jogador):-
-	write('Jogador actual: '),
-	write(Jogador),nl,
-	write('Peca a mover:') ,nl,
-	write('Linha (Ex: 1) : '),
-	read(Y),
-	nl,
-	write('Coluna (Ex: A) : '),
-	read(Xt),
-	letra(Xt, X),
-	write('Posicao desejada:'),
-	nl,
-	write('Linha (Ex: 1) : '),
-	read(Yf),
-	nl,
-	write('Coluna (Ex: A) : '),
-	read(Xt2),
-	letra(Xt2, Xf).
+interaccaoJogador(T,Y,X,Yf,Xf,Jogador):-
+	desenha(T), nl,
+	write('Jogador actual: '),write(Jogador),nl,
+	write('Peca a mover:'),nl,
+	repeat,write('Linha (Ex: 1) : '),read(Y),
+	repeat,write('Coluna (Ex: A) : '),read(Xt),letra(Xt, X),
+	write('Posicao desejada:'),nl,
+	repeat,write('Linha Final (Ex: 1) : '),read(Yf),
+	repeat,write('Coluna Final (Ex: A) : '),read(Xt2),letra(Xt2, Xf).
+
+pede_jogada(X,Y):- get_code(SX), conv(SX,X), get_code(SY), conv(SY,Y).
 
 modoJogador(T, Jogador, ModoCPU):-
 	Jogador == 1,
-	desenha(T), nl,
-	interaccaoJogador(Y,X,Yf,Xf,Jogador),
-	if((verificaPeca(T, Xf,Yf,0),verificaPeca(T,X,Y,Jogador), verificaCaminho(Jogador,X,Y,Xf,Yf,T)),
-	(muda_tab(0,Jogador,Xf,Yf,T,TNovo),
-	muda_tab(Jogador,0,X,Y,TNovo,TNovo2),
+	repeat,
+	interaccaoJogador(T,Y,X,Yf,Xf,Jogador),
+	verificaCaminho(Jogador,X,Y,Xf,Yf,T),
+	modificaT(Jogador,X-Y-Xf-Yf,T,TNovo2),
 	troca(Jogador, Jogador2),
 	conquistaPecas(TNovo2, TNovo3, Jogador),
 	conquistaPecas(TNovo3, TNovo4, Jogador2),
-	if(terminouJogo(TNovo4,Jogador2),menu,modoCPU(TNovo4, Jogador2, ModoCPU))), modoJogador(T, Jogador,ModoCPU)).
+	((terminouJogo(TNovo4,Jogador2),menu) ; modoCPU(TNovo4,Jogador2,ModoCPU)).
 
 % CICLO DO BOT DEPENDENDO DA DIFICULDADE ESCOLHIDA
 modoCPU(T, Jogador, ModoCPU):-
@@ -162,35 +129,22 @@ modoCPU(T, Jogador, ModoCPU):-
 	conquistaPecas(TNovo2, TNovo3, Jogador),
 	conquistaPecas(TNovo3, TNovo4, Jogador2),
 	troca(Jogador, Jogador2),
-	if(terminouJogo(TNovo4,Jogador2),menu,modoJogador(TNovo4, Jogador2, ModoCPU)).
+	((terminouJogo(TNovo4,Jogador2),menu); modoJogador(TNovo4, Jogador2, ModoCPU)).
 
-% MODO INTERMEDIO
+% BOT DO MODO INTERMEDIO
 modoCPU(T, Jogador, ModoCPU):-
 	ModoCPU == 2,
+	write('Estou a Pensar! Aguarde um momento por favor...  '),nl,
 	Jogador == 2,
 	greedy(T,L,1,X, Jogador),
-	L == X,!,
+	((L == X,
 	findall(X-Y-Xf-Yf, verificaCaminho(Jogador, X,Y,Xf,Yf, T),L1),
-	choose(L1, M),
+	choose(L1, M));choose(L,M)),
 	modificaT(Jogador,M,T, TNovo2),
 	conquistaPecas(TNovo2, TNovo3, Jogador),
 	conquistaPecas(TNovo3, TNovo4, Jogador2),
 	troca(Jogador, Jogador2),
-	if(terminouJogo(TNovo4,Jogador2),menu,modoJogador(TNovo4, Jogador2, ModoCPU)).
-
-modoCPU(T, Jogador, ModoCPU):-
-	ModoCPU == 2,
-	Jogador == 2,
-	greedy(T,L,1,X,Jogador),
-	\+ L == X,
-	choose(L, M),
-	modificaT(Jogador,M,T, TNovo2),
-	conquistaPecas(TNovo2, TNovo3, Jogador),
-	conquistaPecas(TNovo3, TNovo4, Jogador2),
-	troca(Jogador, Jogador2),
-	if(terminouJogo(TNovo4,Jogador2),menu,modoJogador(TNovo4, Jogador2, ModoCPU)).
-
-
+	((terminouJogo(TNovo4,Jogador2),menu); modoJogador(TNovo4, Jogador2, ModoCPU)).
 greedy(T,L, P, _, J):-
 	findall(X-Y-Xf-Yf,(verificaCaminho(J,X,Y,Xf,Yf,T),modificaT(J,X-Y-Xf-Yf,T,TNovo2),conquistas(J,_,_,_,_,TNovo2,1,N),N>P),L1),
 	\+ L1 = [],
@@ -199,6 +153,8 @@ greedy(T,L, P, _, J):-
 greedy(_,L, _, L,_).
 
 % FIM DO BOT INTERMEDIO
+
+
 modificaT(J,X-Y-Xf-Yf,T,TNovo):-
 	muda_tab(J,0,X,Y,T,NovoTab),
 	muda_tab(0,J,Xf,Yf,NovoTab,TNovo).
