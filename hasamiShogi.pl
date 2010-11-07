@@ -23,22 +23,38 @@ choose(List, Elt) :-
         random(0, Length, Index),
         nth0(Index, List, Elt).
 
+member(X,[X|_]).
+member(X,[_|T]):-
+
+member(X,T).
+
 %DESENHAR O TABULEIRO
 linhaLimite:-printLinha([' ',*,*,*,*,*,*,*,*,*,*,*,*,*,*,*,*,*,*,*,*,*,*,*,*,*,*,*,*,*,*,*,*,*,*,*,*,*,*,*,*,*,*,*,*,*,*,*,*,*,*,*,*,*,*,*,*,*,*,*,*,*,*,*,*,*,*,*,*,*,*,*,*,*,*,*,' ']).
 linhaLetras:-printLinha([' ',' ',' ',' ',' ',' ','A',' ',' ',' ',' ',' ',' ',' ','B',' ',' ',' ',' ',' ',' ',' ','C',' ',' ',' ',' ',' ',' ',' ','D',' ',' ',' ',' ',' ',' ',' ','E',' ',' ',' ',' ',' ',' ',' ','F',' ',' ',' ',' ',' ',' ',' ','G',' ',' ',' ',' ',' ',' ',' ','H',' ',' ',' ',' ',' ',' ',' ','I',' ',' ',' ',' ',' ']).
 linhaNumerosV(['1','2','3','4','5','6','7','8','9']).
 linhaDivH:-printLinha([' ',*,' ',-,-,-,-,-,-,-,-,-,-,-,-,-,-,-,-,-,-,-,-,-,-,-,-,-,-,-,-,-,-,-,-,-,-,-,-,-,-,-,-,-,-,-,-,-,-,-,-,-,-,-,-,-,-,-,-,-,-,-,-,-,-,-,-,-,-,-,-,-,-,-,' ',*]).
 
+%tabuleiro(
+	 %[[1,1,1,1,1,1,1,1,1],
+	  %[0,0,0,0,0,0,0,0,0],
+	  %[0,0,0,0,0,0,0,0,0],
+	  %[0,0,0,0,0,0,0,0,0],
+	  %[0,0,0,0,0,0,0,0,0],
+	  %[0,0,0,0,0,0,0,0,0],
+	  %[0,0,0,0,0,0,0,0,0],
+	  %[0,0,0,0,0,0,0,0,0],
+	  %[2,2,2,2,2,2,2,2,2]]).
 tabuleiro(
-	 [[1,1,1,1,1,1,1,1,1],
-	  [0,0,0,0,0,0,0,0,0],
-	  [0,0,0,0,0,0,0,0,0],
-	  [0,0,0,0,0,0,0,0,0],
-	  [0,0,0,0,0,0,0,0,0],
-	  [0,0,0,0,0,0,0,0,0],
-	  [0,0,0,0,0,0,0,0,0],
-	  [0,0,0,0,0,0,0,0,0],
+	 [[0,0,2,0,2,0,2,0,0],
+	  [0,2,0,2,0,2,0,0,0],
+	  [2,0,2,0,1,0,2,0,0],
+	  [0,1,0,2,0,2,0,2,0],
+	  [2,0,2,0,2,0,2,0,2],
+	  [0,2,0,0,0,2,0,1,0],
+	  [0,0,0,0,0,0,2,0,2],
+	  [0,0,0,0,0,0,0,2,0],
 	  [2,2,2,2,2,2,2,2,2]]).
+
 
 piece1(1):- write(' ----- |').
 piece1(2):- write(' ----- |').
@@ -146,7 +162,7 @@ modoJogador(T, Jogador, Modo):-
 	troca(Jogador, Jogador2),
 	conquistaPecas(TNovo2, TNovo3, Jogador),
 	conquistaPecas(TNovo3, TNovo4, Jogador2),
-	((terminouJogo(TNovo4,Jogador2),menu) ; modoJ2(TNovo4,Jogador2,Modo)).
+	(((terminouJogo(TNovo4,Jogador);terminouJogo(TNovo4,Jogador2)),menu) ; modoJ2(TNovo4,Jogador2,Modo)).
 
 % CICLO DO BOT DEPENDENDO DA DIFICULDADE ESCOLHIDA
 modoCPU(T, Jogador, Modo):-
@@ -158,7 +174,7 @@ modoCPU(T, Jogador, Modo):-
 	conquistaPecas(TNovo2, TNovo3, Jogador),
 	conquistaPecas(TNovo3, TNovo4, Jogador2),
 	troca(Jogador, Jogador2),
-	((terminouJogo(TNovo4,Jogador2),menu); modoJ1(TNovo4, Jogador2, Modo)).
+	(((terminouJogo(TNovo4,Jogador);terminouJogo(TNovo4,Jogador2)),menu); modoJ1(TNovo4, Jogador2, Modo)).
 
 % BOT DO MODO INTERMEDIO
 modoCPU(T, Jogador, Modo):-
@@ -168,18 +184,33 @@ modoCPU(T, Jogador, Modo):-
 	greedy(T,L,1,X, Jogador),
 	((L == X,
 	findall(X-Y-Xf-Yf, verificaCaminho(Jogador, X,Y,Xf,Yf, T),L1),
-	choose(L1, M));choose(L,M)),
+	choose(L1,M1),escolheNaoSuicida(T,Jogador,L1,M1,M));choose(L,M)),
 	modificaT(Jogador,M,T, TNovo2),
 	conquistaPecas(TNovo2, TNovo3, Jogador),
 	conquistaPecas(TNovo3, TNovo4, Jogador2),
 	troca(Jogador, Jogador2),
-	((terminouJogo(TNovo4,Jogador2),menu); modoJ1(TNovo4, Jogador2, Modo)).
+	(((terminouJogo(TNovo4,Jogador);terminouJogo(TNovo4,Jogador2)),menu); modoJ1(TNovo4, Jogador2, Modo)).
 greedy(T,L, P, _, J):-
 	findall(X-Y-Xf-Yf,(verificaCaminho(J,X,Y,Xf,Yf,T),modificaT(J,X-Y-Xf-Yf,T,TNovo2),conquistas(J,_,_,_,_,TNovo2,1,N),N>P),L1),
 	\+ L1 = [],
 	P1 is P+1,
 	greedy(T,L,P1,L1,J), !.
 greedy(_,L, _, L,_).
+
+escolheNaoSuicida(Tab,J,_,X-Y-Xf-Yf,X-Y-Xf-Yf):-
+	troca(J,J2),
+	modificaT(J,X-Y-Xf-Yf,Tab,TNovo2),
+	conquistas(J2,_,_,_,_,TNovo2,1,N),
+	write(N),nl,
+	N=<1,!.
+escolheNaoSuicida(Tab,J,L,M2,M):-escolheNaoSuicida2(Tab,J,L,M2,M).
+escolheNaoSuicida2(Tab,J,[X-Y-Xf-Yf|Tail],_,M):-
+	troca(J,J2),
+	modificaT(J,X-Y-Xf-Yf,Tab,TNovo2),
+	conquistas(J2,_,_,_,_,TNovo2,1,N),
+	N>1,
+	escolheNaoSuicida2(Tab,J,Tail,X-Y-Xf-Yf,M),!.
+escolheNaoSuicida2(_,_,_,M,M).
 
 modificaT(J,X-Y-Xf-Yf,T,TNovo):-
 	muda_tab(J,0,X,Y,T,NovoTab),
