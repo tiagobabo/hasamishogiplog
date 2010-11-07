@@ -10,6 +10,18 @@ numero(Let):- Let>=49, Let=<58.
 
 letra(a, 1). letra(b, 2). letra(c, 3). letra(d, 4). letra(e, 5). letra(f, 6). letra(g, 7). letra(h, 8). letra(i, 9).
 
+troca(1,2).
+troca(2,1).
+
+if(Condition, TrueClause, FalseClause) :-
+	Condition, !, TrueClause;
+       !, FalseClause.
+
+choose([], []).
+choose(List, Elt) :-
+        length(List, Length),
+        random(0, Length, Index),
+        nth0(Index, List, Elt).
 
 %DESENHAR O TABULEIRO
 linhaLimite:-printLinha([' ',*,*,*,*,*,*,*,*,*,*,*,*,*,*,*,*,*,*,*,*,*,*,*,*,*,*,*,*,*,*,*,*,*,*,*,*,*,*,*,*,*,*,*,*,*,*,*,*,*,*,*,*,*,*,*,*,*,*,*,*,*,*,*,*,*,*,*,*,*,*,*,*,*,*,*,' ']).
@@ -66,9 +78,24 @@ menu:-
     verifica(Esc).
 
 verifica(1):-jVsCpu, !.
-verifica(2):-tabuleiro(T), desenha(T), !.
-verifica(3):-tabuleiro(T), desenha(T), !.
-verifica(_).
+verifica(2):-jVsJ, !.
+verifica(3):-cpuVsCpu, !.
+verifica(_):-write('Até logo...'),nl.
+
+modoJ1(T,Jogador,Modo):-
+	(Modo == -1;Modo == 1;Modo==2;Modo==3),
+	modoJogador(T,Jogador,Modo), !.
+modoJ1(T,Jogador,Modo):-
+	(Modo == 4;Modo == 5;Modo==6),
+	modoCPU(T,Jogador,Modo), !.
+modoJ2(T,Jogador,Modo):-
+	(Modo == 1;Modo==2;Modo==3;Modo==4,Modo==5;Modo==6),
+	modoCPU(T,Jogador,Modo),!.
+modoJ2(T,Jogador,Modo):-modoJogador(T,Jogador,Modo).
+
+%MODO JOGADOR VS JOGADOR
+
+jVsJ:-tabuleiro(T), modoJ1(T, 1, -1).
 
 %MODO JOGADOR VS CPU
 
@@ -79,63 +106,65 @@ jVsCpu:-
 	write('4 - para sair'),nl,
 	repeat,write('Opcao (Ex: 1) : '), get_code(Op),skip_line,Op>=49, Op=<52,conv(Op,Esc),
 	dificuldade(Esc).
-
-dificuldade(1):-tabuleiro(T), modoJogador(T, 1, 1), !.
-dificuldade(2):-tabuleiro(T), modoJogador(T, 1, 2), !.
+dificuldade(1):-tabuleiro(T), modoJ1(T, 1, 1), !.
+dificuldade(2):-tabuleiro(T), modoJ1(T, 1, 2), !.
 dificuldade(3):-jVsCpu, !.
-dificuldade(_).
+dificuldade(_):-write('Até logo...'),nl.
+
+%MODO CPU VS CPU
+cpuVsCpu:-
+	write('1 - Fácil'),nl,
+	write('2 - Intermédio'), nl,
+	write('3 - Difícil'),nl,
+	write('4 - para sair'),nl,
+	repeat,write('Opcao (Ex: 1) : '), get_code(Op),skip_line,Op>=49, Op=<52,conv(Op,Esc),
+	dificuldade2(Esc).
+
+dificuldade2(1):-tabuleiro(T), modoJ1(T, 1, 4), !.
+dificuldade2(2):-tabuleiro(T), modoJ1(T, 1, 5), !.
+dificuldade2(3):-cpuVsCpu, !.
+dificuldade2(_):-write('Até logo...'),nl.
 
 %FIM DA ESCOLHA DOS MODOS DE JOGO
 
 %AVALIACAO DA JOGADA
 
-troca(1,2).
-troca(2,1).
-
-if(Condition, TrueClause, FalseClause) :-
-	Condition, !, TrueClause;
-       !, FalseClause.
-
 interaccaoJogador(T,Y,X,Yf,Xf,Jogador):-
 	desenha(T), nl,
 	write('Jogador actual: '),write(Jogador),nl,
 	write('Peca a mover:'),nl,
-	repeat,write('Linha (Ex: 1) : '),read(Y),
-	repeat,write('Coluna (Ex: A) : '),read(Xt),letra(Xt, X),
+	write('Linha (Ex: 1) : '),read(Y),
+	write('Coluna (Ex: a) : '),read(Xt),letra(Xt, X),
 	write('Posicao desejada:'),nl,
-	repeat,write('Linha Final (Ex: 1) : '),read(Yf),
-	repeat,write('Coluna Final (Ex: A) : '),read(Xt2),letra(Xt2, Xf).
+	write('Linha Final (Ex: 2) : '),read(Yf),
+	write('Coluna Final (Ex: b) : '),read(Xt2),letra(Xt2, Xf).
 
-pede_jogada(X,Y):- get_code(SX), conv(SX,X), get_code(SY), conv(SY,Y).
-
-modoJogador(T, Jogador, ModoCPU):-
-	Jogador == 1,
-	repeat,
+modoJogador(T, Jogador, Modo):-
 	interaccaoJogador(T,Y,X,Yf,Xf,Jogador),
 	verificaCaminho(Jogador,X,Y,Xf,Yf,T),
 	modificaT(Jogador,X-Y-Xf-Yf,T,TNovo2),
 	troca(Jogador, Jogador2),
 	conquistaPecas(TNovo2, TNovo3, Jogador),
 	conquistaPecas(TNovo3, TNovo4, Jogador2),
-	((terminouJogo(TNovo4,Jogador2),menu) ; modoCPU(TNovo4,Jogador2,ModoCPU)).
+	((terminouJogo(TNovo4,Jogador2),menu) ; modoJ2(TNovo4,Jogador2,Modo)).
 
 % CICLO DO BOT DEPENDENDO DA DIFICULDADE ESCOLHIDA
-modoCPU(T, Jogador, ModoCPU):-
-	ModoCPU == 1,
-	Jogador == 2,
+modoCPU(T, Jogador, Modo):-
+	(Modo == 1; Modo == 4),!,
+	desenha(T), nl,
 	findall(X-Y-Xf-Yf, verificaCaminho(Jogador, X,Y,Xf,Yf, T), L),
 	choose(L, M),
 	modificaT(Jogador,M,T, TNovo2),
 	conquistaPecas(TNovo2, TNovo3, Jogador),
 	conquistaPecas(TNovo3, TNovo4, Jogador2),
 	troca(Jogador, Jogador2),
-	((terminouJogo(TNovo4,Jogador2),menu); modoJogador(TNovo4, Jogador2, ModoCPU)).
+	((terminouJogo(TNovo4,Jogador2),menu); modoJ1(TNovo4, Jogador2, Modo)).
 
 % BOT DO MODO INTERMEDIO
-modoCPU(T, Jogador, ModoCPU):-
-	ModoCPU == 2,
+modoCPU(T, Jogador, Modo):-
+	(Modo == 2; Modo == 5),!,
+	desenha(T), nl,
 	write('Estou a Pensar! Aguarde um momento por favor...  '),nl,
-	Jogador == 2,
 	greedy(T,L,1,X, Jogador),
 	((L == X,
 	findall(X-Y-Xf-Yf, verificaCaminho(Jogador, X,Y,Xf,Yf, T),L1),
@@ -144,7 +173,7 @@ modoCPU(T, Jogador, ModoCPU):-
 	conquistaPecas(TNovo2, TNovo3, Jogador),
 	conquistaPecas(TNovo3, TNovo4, Jogador2),
 	troca(Jogador, Jogador2),
-	((terminouJogo(TNovo4,Jogador2),menu); modoJogador(TNovo4, Jogador2, ModoCPU)).
+	((terminouJogo(TNovo4,Jogador2),menu); modoJ1(TNovo4, Jogador2, Modo)).
 greedy(T,L, P, _, J):-
 	findall(X-Y-Xf-Yf,(verificaCaminho(J,X,Y,Xf,Yf,T),modificaT(J,X-Y-Xf-Yf,T,TNovo2),conquistas(J,_,_,_,_,TNovo2,1,N),N>P),L1),
 	\+ L1 = [],
@@ -152,20 +181,16 @@ greedy(T,L, P, _, J):-
 	greedy(T,L,P1,L1,J), !.
 greedy(_,L, _, L,_).
 
-% FIM DO BOT INTERMEDIO
-
-
 modificaT(J,X-Y-Xf-Yf,T,TNovo):-
 	muda_tab(J,0,X,Y,T,NovoTab),
 	muda_tab(0,J,Xf,Yf,NovoTab,TNovo).
 
+% FIM DO BOT INTERMEDIO
 
-choose([], []).
-choose(List, Elt) :-
-        length(List, Length),
-        random(0, Length, Index),
-        nth0(Index, List, Elt).
+% BOT DO MODO DIFICIL
 
+
+% FIM DO BOT DIFICIL
 
 % VERIFICA SE A PECA E' DO UTLIZADOR
 
@@ -184,15 +209,15 @@ verificaPecaLinha([_|R], X, Jogador, Coluna) :-
 
 % VERIFICA SE HA UM CAMINHO ENTRE PECAS
 
-adjacente(X1,Y1,X2,Y2):-X1 == X2, Y1 =:= Y2+1.
-adjacente(X1,Y1,X2,Y2):-X1 == X2, Y1 =:= Y2-1.
-adjacente(X1,Y1,X2,Y2):-Y1 == Y2, X1 =:= X2+1.
+adjacente(X1,Y1,X2,Y2):-X1 == X2, Y1 =:= Y2+1,!.
+adjacente(X1,Y1,X2,Y2):-X1 == X2, Y1 =:= Y2-1,!.
+adjacente(X1,Y1,X2,Y2):-Y1 == Y2, X1 =:= X2+1,!.
 adjacente(X1,Y1,X2,Y2):-Y1 == Y2, X1 =:= X2-1.
-adjacente2(X1,Y1,X2,Y2):-X1 == X2, Y1 =:= Y2+1.
+adjacente2(X1,Y1,X2,Y2):-X1 == X2, Y1 =:= Y2+1,!.
 adjacente2(X1,Y1,X2,Y2):-Y1 == Y2, X1 =:= X2+1.
-adjacente3(X1,Y1,X2,Y2):-X1 == X2, Y1 =:= Y2-1.
+adjacente3(X1,Y1,X2,Y2):-X1 == X2, Y1 =:= Y2-1,!.
 adjacente3(X1,Y1,X2,Y2):-Y1 == Y2, X1 =:= X2-1.
-diagonal(X1,Y1,X2,Y2):-X1==X2,  Y1\==Y2.
+diagonal(X1,Y1,X2,Y2):-X1==X2,  Y1\==Y2,!.
 diagonal(X1,Y1,X2,Y2):-Y1==Y2,  X1\==X2.
 
 verificaCaminho(Jog, X,Y,Xf,Yf, Tab):-
