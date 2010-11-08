@@ -23,21 +23,15 @@ choose(List, Elt) :-
         random(0, Length, Index),
         nth0(Index, List, Elt).
 
-shuffle([], []).
-shuffle(List, [Element|Rest]) :-
-        choose(List, Element),
-        delete(List, Element, NewList),
-        shuffle(NewList, Rest).
-
 cls :- put(27), put("["), put("2"), put("J").
 
 %DESENHAR O TABULEIRO
 linhaLimite:-printLinha([' ',*,*,*,*,*,*,*,*,*,*,*,*,*,*,*,*,*,*,*,*,*,*,*,*,*,*,*,*,*,*,*,*,*,*,*,*,*,*,*,*,*,*,*,*,*,*,*,*,*,*,*,*,*,*,*,*,*,*,*,*,*,*,*,*,*,*,*,*,*,*,*,*,*,*,*,' ']).
-linhaLetras:-printLinha([' ',' ',' ',' ',' ',' ','A',' ',' ',' ',' ',' ',' ',' ','B',' ',' ',' ',' ',' ',' ',' ','C',' ',' ',' ',' ',' ',' ',' ','D',' ',' ',' ',' ',' ',' ',' ','E',' ',' ',' ',' ',' ',' ',' ','F',' ',' ',' ',' ',' ',' ',' ','G',' ',' ',' ',' ',' ',' ',' ','H',' ',' ',' ',' ',' ',' ',' ','I',' ',' ',' ',' ',' ']).
+linhaLetras:-printLinha([' ',' ',' ',' ',' ',' ','a',' ',' ',' ',' ',' ',' ',' ','b',' ',' ',' ',' ',' ',' ',' ','c',' ',' ',' ',' ',' ',' ',' ','d',' ',' ',' ',' ',' ',' ',' ','e',' ',' ',' ',' ',' ',' ',' ','f',' ',' ',' ',' ',' ',' ',' ','g',' ',' ',' ',' ',' ',' ',' ','h',' ',' ',' ',' ',' ',' ',' ','i',' ',' ',' ',' ',' ']).
 linhaNumerosV(['1','2','3','4','5','6','7','8','9']).
 linhaDivH:-printLinha([' ',*,' ',-,-,-,-,-,-,-,-,-,-,-,-,-,-,-,-,-,-,-,-,-,-,-,-,-,-,-,-,-,-,-,-,-,-,-,-,-,-,-,-,-,-,-,-,-,-,-,-,-,-,-,-,-,-,-,-,-,-,-,-,-,-,-,-,-,-,-,-,-,-,-,' ',*]).
 
-tabuleiro(
+/*tabuleiro(
 	 [[1,1,1,1,1,1,1,1,1],
 	  [0,0,0,0,0,0,0,0,0],
 	  [0,0,0,0,0,0,0,0,0],
@@ -46,7 +40,7 @@ tabuleiro(
 	  [0,0,0,0,0,0,0,0,0],
 	  [0,0,0,0,0,0,0,0,0],
 	  [0,0,0,0,0,0,0,0,0],
-	  [2,2,2,2,2,2,2,2,2]]).
+	  [2,2,2,2,2,2,2,2,2]]).*/
 /*tabuleiro(
 	 [[0,0,0,0,0,0,0,0,0],
 	  [0,2,0,0,0,0,0,0,0],
@@ -57,7 +51,7 @@ tabuleiro(
 	  [2,0,0,0,2,0,0,0,0],
 	  [0,2,2,2,0,0,0,0,0],
 	  [0,0,0,0,0,0,0,0,0]]).*/
-/*tabuleiro(
+tabuleiro(
 	 [[0,0,0,0,0,0,0,0,0],
 	  [0,0,0,0,0,0,0,0,0],
 	  [0,0,1,0,0,0,0,0,0],
@@ -66,7 +60,7 @@ tabuleiro(
 	  [0,0,0,0,0,0,0,0,0],
 	  [0,0,0,0,0,0,0,0,0],
 	  [0,0,0,0,0,0,0,0,0],
-	  [0,0,0,0,0,0,0,0,0]]).*/
+	  [0,0,0,0,0,0,0,0,0]]).
 
 piece1(1):- write(' ----- |').
 piece1(2):- write(' ----- |').
@@ -138,9 +132,9 @@ jVsCpu:-
 	write('4 - para sair'),nl,
 	repeat,write('Opcao (Ex: 1) : '), get_code(Op),skip_line,Op>=49, Op=<53,conv(Op,Esc),
 	dificuldade(Esc).
-dificuldade(1):-tabuleiro(T), modoJ1(T, 1, 1), !.
-dificuldade(2):-tabuleiro(T), modoJ1(T, 1, 2), !.
-dificuldade(3):-tabuleiro(T), modoJ1(T, 1, 3), !.
+dificuldade(1):-tabuleiro(T), random(1,3,J), modoJ1(T, J, 1), !.
+dificuldade(2):-tabuleiro(T), random(1,3,J), modoJ1(T, J, 2), !.
+dificuldade(3):-tabuleiro(T), random(1,3,J), modoJ1(T, J, 3), !.
 dificuldade(_):-write('Até logo...'),nl.
 
 %MODO CPU VS CPU
@@ -207,6 +201,25 @@ modoCPU(T, Jogador, Modo):-
 	conquistaPecas(TNovo3, TNovo4, Jogador2),
 	troca(Jogador, Jogador2),
 	(((terminouJogo(TNovo4,Jogador);terminouJogo(TNovo4,Jogador2)),menu); modoJ1(TNovo4, Jogador2, Modo)).
+% BOT DO MODO DIFICIL
+modoCPU(T, Jogador, Modo):-
+	(Modo == 3; Modo == 6),!,
+	desenha(T), nl,
+	write('Estou a Pensar! Aguarde um momento por favor...  '),nl,
+	countPieces(Jogador,T,NPecas),
+	findall(X-Y-Xf-Yf, verificaCaminho(Jogador, X,Y,Xf,Yf, T),L1),
+	shuffle(L1,[Head|L2]),
+	if(NPecas < 5,
+	evaluate_and_choose(Jogador,L2,T,1,1,(Head,-1000),(M,_)),
+   	evaluate_and_choose(Jogador,L2,T,1,1,(Head,-1000),(M,_))),
+       	modificaT(Jogador,M,T, TNovo2),
+	conquistaPecas(TNovo2, TNovo3, Jogador),
+	conquistaPecas(TNovo3, TNovo4, Jogador2),
+	troca(Jogador, Jogador2),
+	(((terminouJogo(TNovo4,Jogador);terminouJogo(TNovo4,Jogador2)),menu); modoJ1(TNovo4, Jogador2, Modo)).
+
+% UTILITARIOS DO GREEDY
+
 greedy(T,L, P, _, J):-
 	findall(X-Y-Xf-Yf,(verificaCaminho(J,X,Y,Xf,Yf,T),modificaT(J,X-Y-Xf-Yf,T,TNovo2),conquistas(J,_,_,_,_,TNovo2,1,N),N>P),L1),
 	\+ L1 = [],
@@ -218,7 +231,6 @@ escolheNaoSuicida(Tab,J,_,X-Y-Xf-Yf,X-Y-Xf-Yf):-
 	troca(J,J2),
 	modificaT(J,X-Y-Xf-Yf,Tab,TNovo2),
 	conquistas(J2,_,_,_,_,TNovo2,1,N),
-	write(N),nl,
 	N=<1,!.
 escolheNaoSuicida(Tab,J,L,M2,M):-escolheNaoSuicida2(Tab,J,L,M2,M).
 escolheNaoSuicida2(Tab,J,[X-Y-Xf-Yf|Tail],_,M):-
@@ -233,65 +245,45 @@ modificaT(J,X-Y-Xf-Yf,T,TNovo):-
 	muda_tab(J,0,X,Y,T,NovoTab),
 	muda_tab(0,J,Xf,Yf,NovoTab,TNovo).
 
-% FIM DO BOT INTERMEDIO
+% UTILITARIOS DO MINIMAX
 
-% BOT DO MODO DIFICIL
 shuffle([], []).
 shuffle(List, [Element|Rest]) :-
         choose(List, Element),
         delete(List, Element, NewList),
         shuffle(NewList, Rest).
 
-modoCPU(T, Jogador, Modo):-
-	(Modo == 3; Modo == 6),!,
-	desenha(T), nl,
-	write('Estou a Pensar! Aguarde um momento por favor...  '),nl,
-	countPieces(Jogador,T,NPecas),
-	findall(X-Y-Xf-Yf, verificaCaminho(Jogador, X,Y,Xf,Yf, T),L1),
-	shuffle(L1,[Head|L2]),
-	write(NPecas),nl,
-	if(NPecas < 5,
-	evaluate_and_choose(Jogador,L2,T,1,1,(Head,-1000),(M,_)),
-   	evaluate_and_choose(Jogador,L2,T,0,1,(Head,-1000),(M,_))),
-       	modificaT(Jogador,M,T, TNovo2),
-	conquistaPecas(TNovo2, TNovo3, Jogador),
-	conquistaPecas(TNovo3, TNovo4, Jogador2),
-	troca(Jogador, Jogador2),
-	(((terminouJogo(TNovo4,Jogador);terminouJogo(TNovo4,Jogador2)),menu); modoJ1(TNovo4, Jogador2, Modo)).
-
 evaluate_and_choose(J,[Move|Moves] ,Position,D ,MaxMin,Record,Best):-
 	modificaT(J,Move,Position, Position1),
-	minimax(J,D,Position1,MaxMin,MoveX,Value),
+	minimax(J,D,Position1,MaxMin,_,Value),
 	update(J,Move,Value,Record,Recordl),
 	evaluate_and_choose(J,Moves,Position,D,MaxMin,Recordl,Best).
 
 
-evaluate_and_choose(J,[],Position,D ,MaxMin ,Record ,Record).
+evaluate_and_choose(_,[],_,_ ,_ ,Record ,Record).
 
-minimax(J, 0,Position,MaxMin,Move,Value):-
-	conquistaPecas(Position, Position2, J),
+minimax(J, 0,Position,MaxMin,_,Value):-
 	troca(J,J2),
+	conquistaPecas(Position, Position2, J),
 	conquistaPecas(Position2, Position3, J2),
        	value(J, Position3,V2),
 	value(J2, Position3, V3),
 	V is V2-V3,
 	Value is V*MaxMin.
-	%write(Value-V2-V3),nl.
 
-minimax(J,D,Position,MaxMin,X-Y-Xf-Yf,Value):-
+minimax(J,D,Position,MaxMin,Move,Value):-
 	D > 0,
 	findall(X-Y-Xf-Yf, verificaCaminho(J, X,Y,Xf,Yf, Position),Moves),
 	D1 is D-1,
 	MinMax is -MaxMin,
        	evaluate_and_choose(J,Moves,Position,D1,MinMax,(nil,-1000),(Move,Value)).
 
-update(J,Move,Value,(Move1,Value1),(Move1,Value1)):-
-	Value =< Value1.
-	%write(Value-Value1-'A'),nl.
+update(_,_,Value,(Move1,Value1),(Move1,Value1)):-
+	Value =< Value1,write(Value-Value1),nl.
 
-update(J,Move,Value,(Move1,Value1),(Move,Value)):-
-	Value > Value1.
-	%write(Value-Value1-'B'),nl.
+update(_,Move,Value,(_,Value1),(Move,Value)):-
+	Value > Value1,write(Value-Value1),nl.
+
 
 value(Jog, Pos, Val):-
 	countPieces(Jog, Pos, Val).
@@ -306,7 +298,7 @@ countPiecesAux(T,X,Y,NPecas,Jogador,Val) :-
 	if(X == 9, (X1 is 1, Y1 is Y+1), (X1 is X+1, Y1 is Y)),
 	countPiecesAux(T,X1,Y1,NPecasNovo, Jogador,Val).
 
-% FIM DO BOT DIFICIL
+% FIM DOS BOTS
 
 % VERIFICA SE A PECA E' DO UTLIZADOR
 
