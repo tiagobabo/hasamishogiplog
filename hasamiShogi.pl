@@ -29,6 +29,8 @@ shuffle(List, [Element|Rest]) :-
         delete(List, Element, NewList),
         shuffle(NewList, Rest).
 
+cls :- put(27), put("["), put("2"), put("J").
+
 %DESENHAR O TABULEIRO
 linhaLimite:-printLinha([' ',*,*,*,*,*,*,*,*,*,*,*,*,*,*,*,*,*,*,*,*,*,*,*,*,*,*,*,*,*,*,*,*,*,*,*,*,*,*,*,*,*,*,*,*,*,*,*,*,*,*,*,*,*,*,*,*,*,*,*,*,*,*,*,*,*,*,*,*,*,*,*,*,*,*,*,' ']).
 linhaLetras:-printLinha([' ',' ',' ',' ',' ',' ','A',' ',' ',' ',' ',' ',' ',' ','B',' ',' ',' ',' ',' ',' ',' ','C',' ',' ',' ',' ',' ',' ',' ','D',' ',' ',' ',' ',' ',' ',' ','E',' ',' ',' ',' ',' ',' ',' ','F',' ',' ',' ',' ',' ',' ',' ','G',' ',' ',' ',' ',' ',' ',' ','H',' ',' ',' ',' ',' ',' ',' ','I',' ',' ',' ',' ',' ']).
@@ -96,17 +98,21 @@ desenha(Tabuleiro):- linhaNumerosV(X),linhaLetras, nl, linhaLimite, nl, linhaDiv
 %ESCOLHA DOS MODOS DE JOGO
 
 menu:-
+    cls,
+    nl,nl,write('         *** MENU *** '), nl,nl,
     write('1 - Jogador vs CPU'),nl,
     write('2 - Jogador vs Jogador'),nl,
     write('3 - CPU vs CPU'),nl,
     write('4 - para sair'),nl,
-    repeat,write('Escolha uma opcao (ex: 1) : '), get_code(Op),skip_line,Op>=49, Op=<52,conv(Op,Esc),
+    write('Escolha uma opcao (ex: 1) : '), get_code(Op),skip_line,Op>=49,conv(Op,Esc),
     verifica(Esc).
 
 verifica(1):-jVsCpu, !.
 verifica(2):-jVsJ, !.
-verifica(3):-cpuVsCpu, !.
-verifica(_):-write('Até logo...'),nl.
+verifica(3):-cpuVsCpu,!.
+verifica(4):-write('Até logo...'),nl,!.
+verifica(_):-menu.
+
 
 modoJ1(T,Jogador,Modo):-
 	(Modo == -1;Modo == 1;Modo==2;Modo==3),
@@ -130,7 +136,7 @@ jVsCpu:-
 	write('2 - Intermédio'), nl,
 	write('3 - Difícil'),nl,
 	write('4 - para sair'),nl,
-	repeat,write('Opcao (Ex: 1) : '), get_code(Op),skip_line,Op>=49, Op=<52,conv(Op,Esc),
+	repeat,write('Opcao (Ex: 1) : '), get_code(Op),skip_line,Op>=49, Op=<53,conv(Op,Esc),
 	dificuldade(Esc).
 dificuldade(1):-tabuleiro(T), modoJ1(T, 1, 1), !.
 dificuldade(2):-tabuleiro(T), modoJ1(T, 1, 2), !.
@@ -143,7 +149,7 @@ cpuVsCpu:-
 	write('2 - Intermédio'), nl,
 	write('3 - Difícil'),nl,
 	write('4 - para sair'),nl,
-	repeat,write('Opcao (Ex: 1) : '), get_code(Op),skip_line,Op>=49, Op=<52,conv(Op,Esc),
+	repeat,write('Opcao (Ex: 1) : '), get_code(Op),skip_line,Op>=49, Op=<53,conv(Op,Esc),
 	dificuldade2(Esc).
 
 dificuldade2(1):-tabuleiro(T), modoJ1(T, 1, 4), !.
@@ -191,7 +197,7 @@ modoCPU(T, Jogador, Modo):-
 modoCPU(T, Jogador, Modo):-
 	(Modo == 2; Modo == 5),!,
 	desenha(T), nl,
-	write('Estou a Pensar! Aguarde um momento por favor...  '),nl,
+	write('Estou a Pensar! Aguarde um momento por favor...  '),nl,sleep(1),
 	greedy(T,L,1,X, Jogador),
 	((L == X,
 	findall(X-Y-Xf-Yf, verificaCaminho(Jogador, X,Y,Xf,Yf, T),L1),
@@ -230,14 +236,23 @@ modificaT(J,X-Y-Xf-Yf,T,TNovo):-
 % FIM DO BOT INTERMEDIO
 
 % BOT DO MODO DIFICIL
+shuffle([], []).
+shuffle(List, [Element|Rest]) :-
+        choose(List, Element),
+        delete(List, Element, NewList),
+        shuffle(NewList, Rest).
 
 modoCPU(T, Jogador, Modo):-
 	(Modo == 3; Modo == 6),!,
 	desenha(T), nl,
 	write('Estou a Pensar! Aguarde um momento por favor...  '),nl,
-	findall(X-Y-Xf-Yf, verificaCaminho(Jogador, X,Y,Xf,Yf, T),L),
-	shuffle(L,[Head|L2]),
-	evaluate_and_choose(Jogador,L2,T,1,1,(Head,1000),(M,_)),
+	countPieces(Jogador,T,NPecas),
+	findall(X-Y-Xf-Yf, verificaCaminho(Jogador, X,Y,Xf,Yf, T),L1),
+	shuffle(L1,[Head|L2]),
+	write(NPecas),nl,
+	if(NPecas < 5,
+	evaluate_and_choose(Jogador,L2,T,1,1,(Head,-1000),(M,_)),
+   	evaluate_and_choose(Jogador,L2,T,0,1,(Head,-1000),(M,_))),
        	modificaT(Jogador,M,T, TNovo2),
 	conquistaPecas(TNovo2, TNovo3, Jogador),
 	conquistaPecas(TNovo3, TNovo4, Jogador2),
@@ -254,35 +269,37 @@ evaluate_and_choose(J,[Move|Moves] ,Position,D ,MaxMin,Record,Best):-
 evaluate_and_choose(J,[],Position,D ,MaxMin ,Record ,Record).
 
 minimax(J, 0,Position,MaxMin,Move,Value):-
-	%desenha(Position),
 	conquistaPecas(Position, Position2, J),
 	troca(J,J2),
 	conquistaPecas(Position2, Position3, J2),
-       	value(J, Position3,V),
+       	value(J, Position3,V2),
+	value(J2, Position3, V3),
+	V is V2-V3,
 	Value is V*MaxMin.
+	%write(Value-V2-V3),nl.
 
 minimax(J,D,Position,MaxMin,X-Y-Xf-Yf,Value):-
 	D > 0,
-%	troca(J,J2),
 	findall(X-Y-Xf-Yf, verificaCaminho(J, X,Y,Xf,Yf, Position),Moves),
 	D1 is D-1,
 	MinMax is -MaxMin,
        	evaluate_and_choose(J,Moves,Position,D1,MinMax,(nil,-1000),(Move,Value)).
 
-update(J,Move,Value,(Move1,Value1),(Move,Value)):-
-	Value =< Value1.
-
 update(J,Move,Value,(Move1,Value1),(Move1,Value1)):-
-       Value > Value1.
+	Value =< Value1.
+	%write(Value-Value1-'A'),nl.
+
+update(J,Move,Value,(Move1,Value1),(Move,Value)):-
+	Value > Value1.
+	%write(Value-Value1-'B'),nl.
 
 value(Jog, Pos, Val):-
-	troca(Jog,Jog2),
-	countPieces(Jog2, Pos, Val).
+	countPieces(Jog, Pos, Val).
 
 countPieces(Jog, Pos, Val):-
 	countPiecesAux(Pos, 1,1,0,Jog,Val).
 
-countPiecesAux(_,9,10,NPecas,_,NPecas):-!.
+countPiecesAux(_,1,10,NPecas,_,NPecas):-!.
 
 countPiecesAux(T,X,Y,NPecas,Jogador,Val) :-
        	if(verificaPeca(T, X, Y, Jogador), NPecasNovo is NPecas+1, NPecasNovo is NPecas),
