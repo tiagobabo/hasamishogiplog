@@ -1,5 +1,4 @@
 %UTILITARIOS
-
 conv(Let,Valor):- maiuscula(Let), Valor is Let-64.
 conv(Let,Valor):- minuscula(Let), Valor is Let-96.
 conv(Let,Valor):- numero(Let), Valor is Let-48.
@@ -42,7 +41,7 @@ linhaDivH:-printLinha([' ',*,' ',-,-,-,-,-,-,-,-,-,-,-,-,-,-,-,-,-,-,-,-,-,-,-,-
 	  [0,0,0,0,0,0,0,0,0],
 	  [2,2,2,2,2,2,2,2,2]]).*/
 /*tabuleiro(
-	 [[0,0,0,0,0,0,0,0,0],
+1,1[0,0,0,0,0,0,0,0,0],
 	  [0,2,0,0,0,0,0,0,0],
 	  [2,0,2,0,2,0,0,0,0],
 	  [0,1,0,0,2,0,0,0,0],
@@ -96,14 +95,16 @@ menu:-
     write('1 - Jogador vs CPU'),nl,
     write('2 - Jogador vs Jogador'),nl,
     write('3 - CPU vs CPU'),nl,
-    write('4 - para sair'),nl,
+    write('4 - Como Jogar?'),nl,
+    write('5 - Sair'),nl,
     write('Escolha uma opcao (ex: 1) : '), get_code(Op),skip_line,Op>=49,conv(Op,Esc),
     verifica(Esc).
 
 verifica(1):-jVsCpu, !.
 verifica(2):-jVsJ, !.
 verifica(3):-cpuVsCpu,!.
-verifica(4):-write('Até logo...'),nl,!.
+verifica(4):-descricaoJogo,menu,!.
+verifica(5):-write('Até logo...'),nl,!.
 verifica(_):-menu.
 
 
@@ -432,3 +433,9 @@ terminouJogoaux(T,X,Y,NPecas,Jogador) :-
        	if(verificaPeca(T, X, Y, Jogador), NPecasNovo is NPecas+1, NPecasNovo is NPecas),
 	if(X == 9, (X1 is 1, Y1 is Y+1), (X1 is X+1, Y1 is Y)),
 	terminouJogoaux(T,X1,Y1,NPecasNovo, Jogador).
+
+%DESCRICAO DO JOGO
+descricaoJogo:-
+	write('Como jogar:'),nl,
+	write('O objectivo do Hashami Shogi é simples: conseguir retirar as peças do adversário prensando-as com as nossas. Para isso, podemos mover as peças para a frente, trás, esquerda, e direita, sem restrições de espaço. O processo de captura passa por rodear a peça inimiga com duas nossas na horizontal ou vertical (a diagonal não é considerada). Perde aquele que ficar primeiro com apenas duas peças no tabuleiro.').
+
