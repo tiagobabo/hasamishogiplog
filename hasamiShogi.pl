@@ -282,7 +282,7 @@ value(Jog, Pos, Val):-
 countPieces(Jog, Pos, Val):-
 	countPiecesAux(Pos, 1,1,0,Jog,Val).
 
-countPiecesAux(_,9,9,NPecas,_,NPecas):-!.
+countPiecesAux(_,9,10,NPecas,_,NPecas):-!.
 
 countPiecesAux(T,X,Y,NPecas,Jogador,Val) :-
        	if(verificaPeca(T, X, Y, Jogador), NPecasNovo is NPecas+1, NPecasNovo is NPecas),
@@ -420,6 +420,3 @@ terminouJogoaux(T,X,Y,NPecas,Jogador) :-
        	if(verificaPeca(T, X, Y, Jogador), NPecasNovo is NPecas+1, NPecasNovo is NPecas),
 	if(X == 9, (X1 is 1, Y1 is Y+1), (X1 is X+1, Y1 is Y)),
 	terminouJogoaux(T,X1,Y1,NPecasNovo, Jogador).
-
-
-
