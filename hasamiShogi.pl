@@ -31,7 +31,7 @@ linhaLetras:-printLinha([' ',' ',' ',' ',' ',' ','a',' ',' ',' ',' ',' ',' ',' '
 linhaNumerosV(['1','2','3','4','5','6','7','8','9']).
 linhaDivH:-printLinha([' ',*,' ',-,-,-,-,-,-,-,-,-,-,-,-,-,-,-,-,-,-,-,-,-,-,-,-,-,-,-,-,-,-,-,-,-,-,-,-,-,-,-,-,-,-,-,-,-,-,-,-,-,-,-,-,-,-,-,-,-,-,-,-,-,-,-,-,-,-,-,-,-,-,-,' ',*]).
 
-tabuleiro(
+/*tabuleiro(
 	 [[1,1,1,1,1,1,1,1,1],
 	  [0,0,0,0,0,0,0,0,0],
 	  [0,0,0,0,0,0,0,0,0],
@@ -40,7 +40,7 @@ tabuleiro(
 	  [0,0,0,0,0,0,0,0,0],
 	  [0,0,0,0,0,0,0,0,0],
 	  [0,0,0,0,0,0,0,0,0],
-	  [2,2,2,2,2,2,2,2,2]]).
+	  [2,2,2,2,2,2,2,2,2]]).*/
 /*tabuleiro(
 	 [[0,0,0,0,0,0,0,0,0],
 	  [0,2,0,0,0,0,0,0,0],
@@ -51,7 +51,7 @@ tabuleiro(
 	  [2,0,0,0,2,0,0,0,0],
 	  [0,2,2,2,0,0,0,0,0],
 	  [0,0,0,0,0,0,0,0,0]]).*/
-/*tabuleiro(
+tabuleiro(
 	 [[0,0,0,0,0,0,0,0,0],
 	  [0,0,0,0,0,0,0,0,0],
 	  [0,0,1,0,0,0,0,0,0],
@@ -60,7 +60,7 @@ tabuleiro(
 	  [0,0,0,0,0,0,0,0,0],
 	  [0,0,0,0,0,0,0,0,0],
 	  [0,0,0,0,0,0,0,0,0],
-	  [0,0,0,0,0,0,0,0,0]]).*/
+	  [0,0,0,0,0,0,0,0,0]]).
 
 piece1(1):- write(' ----- |').
 piece1(2):- write(' ----- |').
@@ -90,9 +90,8 @@ desenha(Tabuleiro):- linhaNumerosV(X),linhaLetras, nl, linhaLimite, nl, linhaDiv
 %FIM DO DESENHO DO TABULEIRO
 
 %ESCOLHA DOS MODOS DE JOGO
-
+iniciaJogo:-cls, menu.
 menu:-
-    cls,
     nl,nl,write('         *** MENU *** '), nl,nl,
     write('1 - Jogador vs CPU'),nl,
     write('2 - Jogador vs Jogador'),nl,
@@ -148,7 +147,7 @@ cpuVsCpu:-
 
 dificuldade2(1):-tabuleiro(T), modoJ1(T, 1, 4), !.
 dificuldade2(2):-tabuleiro(T), modoJ1(T, 1, 5), !.
-dificuldade2(3):-tabuleiro(T), modoJ1(T, 1,6), !.
+dificuldade2(3):-tabuleiro(T), modoJ1(T, 1, 6), !.
 dificuldade2(_):-write('Até logo...'),nl.
 
 %FIM DA ESCOLHA DOS MODOS DE JOGO
@@ -207,11 +206,11 @@ modoCPU(T, Jogador, Modo):-
 	desenha(T), nl,
 	write('Estou a Pensar! Aguarde um momento por favor...  '),nl,
 	countPieces(Jogador,T,NPecas),
-	findall(X-Y-Xf-Yf, verificaCaminho(Jogador, X,Y,Xf,Yf, T),L1),
-	shuffle(L1,[Head|L2]),
+	findall(X-Y-Xf-Yf, verificaCaminho(Jogador, X,Y,Xf,Yf, T),L),
+	shuffle(L,[Head|L2]),
 	if(NPecas < 5,
-	evaluate_and_choose(Jogador,L2,T,0,1,(Head,-1000),(M,_)),
-   	evaluate_and_choose(Jogador,L2,T,2,1,(Head,-1000),(M,_))),
+	evaluate_and_choose(Jogador,L2,T,2,1,(Head,-1000),(M,_)),
+   	evaluate_and_choose(Jogador,L2,T,0,1,(Head,-1000),(M,_))),
        	modificaT(Jogador,M,T, TNovo2),
 	conquistaPecas(TNovo2, TNovo3, Jogador),
 	conquistaPecas(TNovo3, TNovo4, Jogador2),
@@ -264,20 +263,23 @@ evaluate_and_choose(_,[],_,_ ,_ ,Record ,Record).
 
 minimax(J, 0,Position,MaxMin,_,Value):-
 	troca(J,J2),
+	value(J, Position, V1),
+	value(J2, Position, V2),
 	conquistaPecas(Position, Position2, J),
 	conquistaPecas(Position2, Position3, J2),
-       	value(J, Position3,V2),
-	value(J2, Position3, V3),
-	V is V2-V3,
-	Value is V.
+       	value(J, Position3,V3),
+	value(J2, Position3, V4),
+	if(V2 > V4, V5 is 1000, V5 is 0),
+	if(V1 < V3, V6 is -1000, V6 is 0),
+	V is V5+V6+V4*100+V3*(-100),
+	Value is V*MaxMin.
 
 minimax(J,D,Position,MaxMin,Move,Value):-
 	D > 0,
-	troca(J,J2),
-	findall(X-Y-Xf-Yf, verificaCaminho(J2, X,Y,Xf,Yf, Position),Moves),
+	findall(X-Y-Xf-Yf, verificaCaminho(J, X,Y,Xf,Yf, Position),Moves),
 	D1 is D-1,
 	MinMax is -MaxMin,
-       	evaluate_and_choose(J2,Moves,Position,D1,MinMax,(nil,-1000),(Move,Value)).
+       	evaluate_and_choose(J,Moves,Position,D1,MinMax,(nil,-1000),(Move,Value)).
 
 update(_,_,Value,(Move1,Value1),(Move1,Value1)):-
 	Value =< Value1.
@@ -422,7 +424,7 @@ muda_linha(N,Peca,Pnov,X,[El|Resto],[El|Resto2]):-
 %VERIFICA SE O JOGO TERMINOU
 
 terminouJogo(T,Jogador) :- terminouJogoaux(T,1,1,0,Jogador).
-terminouJogoaux(T,9,9,NPecas,Jogador):-!, NPecas < 3,desenha(T),nl,nl,nl,
+terminouJogoaux(T,1,10,NPecas,Jogador):-!, NPecas < 3,desenha(T),nl,nl,nl,
 	write('Terminou o jogo. O jogador '),
 	troca(Jogador, Jogador2), write(Jogador2), write(' venceu.'),nl,nl,nl.
 
