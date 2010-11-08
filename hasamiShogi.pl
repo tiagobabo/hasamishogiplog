@@ -23,6 +23,12 @@ choose(List, Elt) :-
         random(0, Length, Index),
         nth0(Index, List, Elt).
 
+shuffle([], []).
+shuffle(List, [Element|Rest]) :-
+        choose(List, Element),
+        delete(List, Element, NewList),
+        shuffle(NewList, Rest).
+
 %DESENHAR O TABULEIRO
 linhaLimite:-printLinha([' ',*,*,*,*,*,*,*,*,*,*,*,*,*,*,*,*,*,*,*,*,*,*,*,*,*,*,*,*,*,*,*,*,*,*,*,*,*,*,*,*,*,*,*,*,*,*,*,*,*,*,*,*,*,*,*,*,*,*,*,*,*,*,*,*,*,*,*,*,*,*,*,*,*,*,*,' ']).
 linhaLetras:-printLinha([' ',' ',' ',' ',' ',' ','A',' ',' ',' ',' ',' ',' ',' ','B',' ',' ',' ',' ',' ',' ',' ','C',' ',' ',' ',' ',' ',' ',' ','D',' ',' ',' ',' ',' ',' ',' ','E',' ',' ',' ',' ',' ',' ',' ','F',' ',' ',' ',' ',' ',' ',' ','G',' ',' ',' ',' ',' ',' ',' ','H',' ',' ',' ',' ',' ',' ',' ','I',' ',' ',' ',' ',' ']).
@@ -39,17 +45,26 @@ tabuleiro(
 	  [0,0,0,0,0,0,0,0,0],
 	  [0,0,0,0,0,0,0,0,0],
 	  [2,2,2,2,2,2,2,2,2]]).
-%tabuleiro(
-	 %[[0,0,2,0,2,0,2,0,0],
-	 %[0,2,0,2,0,2,0,0,0],
-	  %[2,0,2,0,1,0,2,0,0],
-	  %[0,1,0,2,0,2,0,2,0],
-	  %[2,0,2,0,2,0,2,0,2],
-	  %[0,2,0,0,0,2,0,1,0],
-	  %[0,0,0,0,0,0,2,0,2],
-	  %[0,0,0,0,0,0,0,2,0],
-	  %[2,2,2,2,2,2,2,2,2]]).
-
+/*tabuleiro(
+	 [[0,0,0,0,0,0,0,0,0],
+	  [0,2,0,0,0,0,0,0,0],
+	  [2,0,2,0,2,0,0,0,0],
+	  [0,1,0,0,2,0,0,0,0],
+	  [2,0,2,2,2,0,0,0,0],
+	  [2,0,2,2,0,0,0,0,0],
+	  [2,0,0,0,2,0,0,0,0],
+	  [0,2,2,2,0,0,0,0,0],
+	  [0,0,0,0,0,0,0,0,0]]).*/
+/*tabuleiro(
+	 [[0,0,0,0,0,0,0,0,0],
+	  [0,0,0,0,0,0,0,0,0],
+	  [0,0,1,0,0,0,0,0,0],
+	  [0,0,0,2,1,0,0,0,0],
+	  [0,0,0,0,0,0,0,0,0],
+	  [0,0,0,0,0,0,0,0,0],
+	  [0,0,0,0,0,0,0,0,0],
+	  [0,0,0,0,0,0,0,0,0],
+	  [0,0,0,0,0,0,0,0,0]]).*/
 
 piece1(1):- write(' ----- |').
 piece1(2):- write(' ----- |').
@@ -119,7 +134,7 @@ jVsCpu:-
 	dificuldade(Esc).
 dificuldade(1):-tabuleiro(T), modoJ1(T, 1, 1), !.
 dificuldade(2):-tabuleiro(T), modoJ1(T, 1, 2), !.
-dificuldade(3):-jVsCpu, !.
+dificuldade(3):-tabuleiro(T), modoJ1(T, 1, 3), !.
 dificuldade(_):-write('Até logo...'),nl.
 
 %MODO CPU VS CPU
@@ -133,7 +148,7 @@ cpuVsCpu:-
 
 dificuldade2(1):-tabuleiro(T), modoJ1(T, 1, 4), !.
 dificuldade2(2):-tabuleiro(T), modoJ1(T, 1, 5), !.
-dificuldade2(3):-cpuVsCpu, !.
+dificuldade2(3):-tabuleiro(T), modoJ1(T, 1,6), !.
 dificuldade2(_):-write('Até logo...'),nl.
 
 %FIM DA ESCOLHA DOS MODOS DE JOGO
@@ -215,6 +230,63 @@ modificaT(J,X-Y-Xf-Yf,T,TNovo):-
 
 % BOT DO MODO DIFICIL
 
+modoCPU(T, Jogador, Modo):-
+	(Modo == 3; Modo == 6),!,
+	desenha(T), nl,
+	write('Estou a Pensar! Aguarde um momento por favor...  '),nl,
+	findall(X-Y-Xf-Yf, verificaCaminho(Jogador, X,Y,Xf,Yf, T),L),
+	shuffle(L,[Head|L2]),
+	evaluate_and_choose(Jogador,L2,T,1,1,(Head,1000),(M,_)),
+       	modificaT(Jogador,M,T, TNovo2),
+	conquistaPecas(TNovo2, TNovo3, Jogador),
+	conquistaPecas(TNovo3, TNovo4, Jogador2),
+	troca(Jogador, Jogador2),
+	(((terminouJogo(TNovo4,Jogador);terminouJogo(TNovo4,Jogador2)),menu); modoJ1(TNovo4, Jogador2, Modo)).
+
+evaluate_and_choose(J,[Move|Moves] ,Position,D ,MaxMin,Record,Best):-
+	modificaT(J,Move,Position, Position1),
+	minimax(J,D,Position1,MaxMin,MoveX,Value),
+	update(J,Move,Value,Record,Recordl),
+	evaluate_and_choose(J,Moves,Position,D,MaxMin,Recordl,Best).
+
+
+evaluate_and_choose(J,[],Position,D ,MaxMin ,Record ,Record).
+
+minimax(J, 0,Position,MaxMin,Move,Value):-
+	%desenha(Position),
+	conquistaPecas(Position, Position2, J),
+	troca(J,J2),
+	conquistaPecas(Position2, Position3, J2),
+       	value(J, Position3,V),
+	Value is V*MaxMin.
+
+minimax(J,D,Position,MaxMin,X-Y-Xf-Yf,Value):-
+	D > 0,
+	troca(J,J2),
+	findall(X-Y-Xf-Yf, verificaCaminho(J2, X,Y,Xf,Yf, Position),Moves),
+	D1 is D-1,
+	MinMax is -MaxMin,
+       	evaluate_and_choose(J2,Moves,Position,D1,MinMax,(nil,-1000),(Move,Value)).
+
+update(J,Move,Value,(Move1,Value1),(Move,Value)):-
+	Value =< Value1.
+
+update(J,Move,Value,(Move1,Value1),(Move1,Value1)):-
+       Value > Value1.
+
+value(Jog, Pos, Val):-
+	troca(Jog,Jog2),
+	countPieces(Jog2, Pos, Val).
+
+countPieces(Jog, Pos, Val):-
+	countPiecesAux(Pos, 1,1,0,Jog,Val).
+
+countPiecesAux(_,9,9,NPecas,_,NPecas):-!.
+
+countPiecesAux(T,X,Y,NPecas,Jogador,Val) :-
+       	if(verificaPeca(T, X, Y, Jogador), NPecasNovo is NPecas+1, NPecasNovo is NPecas),
+	if(X == 9, (X1 is 1, Y1 is Y+1), (X1 is X+1, Y1 is Y)),
+	countPiecesAux(T,X1,Y1,NPecasNovo, Jogador,Val).
 
 % FIM DO BOT DIFICIL
 
@@ -347,4 +419,6 @@ terminouJogoaux(T,X,Y,NPecas,Jogador) :-
        	if(verificaPeca(T, X, Y, Jogador), NPecasNovo is NPecas+1, NPecasNovo is NPecas),
 	if(X == 9, (X1 is 1, Y1 is Y+1), (X1 is X+1, Y1 is Y)),
 	terminouJogoaux(T,X1,Y1,NPecasNovo, Jogador).
+
+
 
