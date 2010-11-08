@@ -166,13 +166,14 @@ interaccaoJogador(T,Y,X,Yf,Xf,Jogador):-
 	write('Coluna Final (Ex: b) : '),read(Xt2),letra(Xt2, Xf).
 
 modoJogador(T, Jogador, Modo):-
-	interaccaoJogador(T,Y,X,Yf,Xf,Jogador),
-	verificaCaminho(Jogador,X,Y,Xf,Yf,T),
-	modificaT(Jogador,X-Y-Xf-Yf,T,TNovo2),
-	troca(Jogador, Jogador2),
-	conquistaPecas(TNovo2, TNovo3, Jogador),
-	conquistaPecas(TNovo3, TNovo4, Jogador2),
-	(((terminouJogo(TNovo4,Jogador);terminouJogo(TNovo4,Jogador2)),menu) ; modoJ2(TNovo4,Jogador2,Modo)).
+	if((interaccaoJogador(T,Y,X,Yf,Xf,Jogador),
+	    verificaCaminho(Jogador,X,Y,Xf,Yf,T),
+	    modificaT(Jogador,X-Y-Xf-Yf,T,TNovo2)),
+	    (troca(Jogador, Jogador2),
+	    conquistaPecas(TNovo2, TNovo3, Jogador),
+	    conquistaPecas(TNovo3, TNovo4, Jogador2),
+	    (((terminouJogo(TNovo4,Jogador);terminouJogo(TNovo4,Jogador2)),menu) ; modoJ2(TNovo4,Jogador2,Modo))),
+	   modoJogador(T,Jogador,Modo)).
 
 % CICLO DO BOT DEPENDENDO DA DIFICULDADE ESCOLHIDA
 modoCPU(T, Jogador, Modo):-
@@ -262,11 +263,11 @@ minimax(J, 0,Position,MaxMin,Move,Value):-
 
 minimax(J,D,Position,MaxMin,X-Y-Xf-Yf,Value):-
 	D > 0,
-	troca(J,J2),
-	findall(X-Y-Xf-Yf, verificaCaminho(J2, X,Y,Xf,Yf, Position),Moves),
+%	troca(J,J2),
+	findall(X-Y-Xf-Yf, verificaCaminho(J, X,Y,Xf,Yf, Position),Moves),
 	D1 is D-1,
 	MinMax is -MaxMin,
-       	evaluate_and_choose(J2,Moves,Position,D1,MinMax,(nil,-1000),(Move,Value)).
+       	evaluate_and_choose(J,Moves,Position,D1,MinMax,(nil,-1000),(Move,Value)).
 
 update(J,Move,Value,(Move1,Value1),(Move,Value)):-
 	Value =< Value1.
