@@ -1,3 +1,4 @@
+%AUTORES: TIAGO BABO, FELIPE SCHMITT, HELDER MOREIRA
 %UTILITARIOS
 conv(Let,Valor):- maiuscula(Let), Valor is Let-64.
 conv(Let,Valor):- minuscula(Let), Valor is Let-96.
