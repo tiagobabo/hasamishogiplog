@@ -1,0 +1,1 @@
+Desenvolvimento do jogo Hasami Shogi em Prolog.
